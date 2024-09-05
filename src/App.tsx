@@ -37,7 +37,7 @@ function App() {
   ) : (pathname === '/login') ?  <SignIn /> :(
     <DefaultLayout>
       <Routes>
-         <Route
+         {/* <Route
           index
           element={
             <>
@@ -45,7 +45,7 @@ function App() {
               <ECommerce />
             </>
           }
-        />
+        /> */}
         {/* <Route
           path="/calendar"
           element={
@@ -64,7 +64,7 @@ function App() {
             </>
           }
         /> */}
-        <Route
+        {/* <Route
           path="/forms/form-elements"
           element={
             <>
@@ -99,8 +99,8 @@ function App() {
               <Settings />
             </>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/chart"
           element={
             <>
@@ -117,8 +117,8 @@ function App() {
               <Alerts />
             </>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/ui/buttons"
           element={
             <>
@@ -126,7 +126,7 @@ function App() {
               <Buttons />
             </>
           }
-        />
+        /> */}
         <Route
           path="/chi-tieu-cap-1"
           element={
@@ -136,7 +136,7 @@ function App() {
             </>
           }
         />
-         <Route
+         {/* <Route
           path="/chi-tieu-cap-2"
           element={
             <>
@@ -153,7 +153,7 @@ function App() {
               <ChiTieuCap3/>
             </>
           }
-        />
+        /> */}
 
         {/* <Route
           path="/auth/signin"
