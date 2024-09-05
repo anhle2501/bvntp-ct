@@ -1,0 +1,26 @@
+# Use Node image to build the React app
+FROM node:14 as build
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Clone the repository from GitHub
+RUN git clone https://github.com/anhle2501/bvntp-ct.git .
+
+# Install dependencies
+RUN npm install
+
+# Build the application for production
+RUN npm run build
+
+# Use Nginx to serve the static files
+FROM nginx:alpine
+
+# Copy the build output to Nginx's default public directory
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
