@@ -115,10 +115,10 @@ function App() {
           }
         /> */}
         <Route
-          path="/chi-tieu-cap-1"
+          path="/chi-tieu"
           element={
             <>
-              <PageTitle title="Chỉ tiêu cấp 1 | NTP" />
+              <PageTitle title="Chỉ tiêu | NTP" />
               <ChiTieuCap1/>
             </>
           }
