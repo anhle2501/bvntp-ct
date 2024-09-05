@@ -12,6 +12,7 @@
     "name": "bvntp-ct"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.4.0",
     "antd": "^5.20.3",
     "apexcharts": "^3.41.0",
     "bootstrap": "^5.3.3",

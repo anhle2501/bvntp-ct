@@ -1,16 +1,26 @@
-import { Link } from 'react-router-dom';
-import TableThree from '../../components/Tables/TableThree';
-import {
-  MaterialReactTable,
-  MRT_ColumnDef,
-  MRT_Row,
-  MRT_TableInstance,
-  useMaterialReactTable,
-} from 'material-react-table';
 import { useEffect, useMemo, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
 import './ChiTieuCap1.css';
-import { notification } from 'antd';
+import { notification, Popconfirm } from 'antd';
+import {
+  DeleteFilled,
+  PlusCircleFilled,
+  QuestionCircleOutlined,
+  SaveFilled,
+} from '@ant-design/icons';
+import { DanhMuc } from '../../types/danhmuc';
+import {
+  LuuTieuChiCu,
+  LuuTieuChiMoi,
+  LuuTieuMucConCu,
+  LuuTieuMucConMoi,
+  LuuTieuMucCu,
+  LuuTieuMucMoi,
+  ThemTieuMuc,
+  ThemTieuMucCon,
+  XoaTieuMuc,
+  XoaTieuMucCon,
+} from '../../api/ChiTieuAPI';
+import { TieuMuc } from '../../types/tieumuc';
 
 interface Level2Count {
   [key: number]: number;
@@ -20,64 +30,15 @@ interface Level3Count {
   [key: number]: { [key: number]: number };
 }
 
-interface TieuChi {
-  so_tieuchi?: number;
-  ten_tieuchi?: string;
-  mo_ta?: string;
-}
-
-interface DanhMuc {
-  cac_tieu_muc: [
-    {
-      cac_tieu_muc_con: [
-        {
-          diem_toi_da: number;
-          mo_ta_tieu_muc_con: string;
-          muc: number;
-          so_tieu_muc_con: string;
-          ten_tieu_muc_con: string;
-        },
-      ];
-      diem_toi_da: number;
-      mo_ta_tieu_muc: string;
-      so_tieu_muc: number;
-      ten_tieu_muc: string;
-    },
-  ];
-  mo_ta: string;
-  nguoi_nhap: string;
-  so_tieuchi: number;
-  ten_tieuchi: string;
-  thoi_gian_cap_nhat: string;
-  thoi_gian_them_moi: string;
-}
-
-interface TieuMuc {
-  cac_tieu_muc_con: [
-    {
-      diem_toi_da: number;
-      mo_ta_tieu_muc_con: string;
-      muc: number;
-      so_tieu_muc_con: string;
-      ten_tieu_muc_con: string;
-    },
-  ];
-  diem_toi_da: number;
-  mo_ta_tieu_muc: string;
-  so_tieu_muc: number;
-  ten_tieu_muc: string;
-}
-
 const ChiTieuCap1: React.FC = () => {
   const [dataTieuChi, setDataTieuChi] = useState<DanhMuc[]>([]);
 
   const [level1Count] = useState<number>(83);
-  const [level2Counts, setLevel2Counts] = useState<Level2Count>({});
-  const [level3Counts, setLevel3Counts] = useState<Level3Count>({});
+  // const [level2Counts, setLevel2Counts] = useState<Level2Count>({});
+  // const [level3Counts, setLevel3Counts] = useState<Level3Count>({});
   const [status, setStatus] = useState<string>('');
 
   const [api, contextHolder] = notification.useNotification();
-
   useEffect(() => {
     const fetchDataTieuChi = async () => {
       try {
@@ -88,6 +49,7 @@ const ChiTieuCap1: React.FC = () => {
           let data = await res.json();
 
           setDataTieuChi(data?.danh_muc);
+          initializeLevelCounts(data?.danh_muc);
           setStatus('Fetch');
         }
       } catch (error) {
@@ -97,19 +59,27 @@ const ChiTieuCap1: React.FC = () => {
     fetchDataTieuChi();
   }, [status]);
 
-  useEffect(() => {
-    initLevel1();
-  }, []);
-
-  const initLevel1 = () => {
+  const initializeLevelCounts = (data: DanhMuc[]) => {
     const newLevel2Counts: Level2Count = {};
-    for (let i = 1; i <= level1Count; i++) {
-      newLevel2Counts[i] = 0;
-    }
-    setLevel2Counts(newLevel2Counts);
-  };
+    const newLevel3Counts: Level3Count = {};
 
-  const saveLevel1 = async (level1Id: number) => {
+    data.forEach((item) => {
+      const level1Id = item.so_tieuchi;
+      newLevel2Counts[level1Id] = item.cac_tieu_muc.length;
+
+      item.cac_tieu_muc.forEach((tieuMuc, index) => {
+        const level2Id = index + 1;
+        if (!newLevel3Counts[level1Id]) {
+          newLevel3Counts[level1Id] = {};
+        }
+        newLevel3Counts[level1Id][level2Id] = tieuMuc.cac_tieu_muc_con.length;
+      });
+    });
+
+    // setLevel2Counts(newLevel2Counts);
+    // setLevel3Counts(newLevel3Counts);
+  };
+  const luuTieuChi = async (level1Id: number) => {
     const tenTieuchi = (
       document.getElementById(
         `ten-tieuchi-cap1-${level1Id}`,
@@ -121,7 +91,7 @@ const ChiTieuCap1: React.FC = () => {
       ) as HTMLInputElement
     )?.value;
 
-    if (tenTieuchi && noidungTieuchi) {
+    if (tenTieuchi.trim() && noidungTieuchi.trim()) {
       const tieuchiDataPost = {
         so_tieuchi: level1Id,
         ten_tieuchi: tenTieuchi,
@@ -136,62 +106,22 @@ const ChiTieuCap1: React.FC = () => {
       };
 
       try {
-        let res;
         let existingData = dataTieuChi.find((tc) => tc.so_tieuchi === level1Id);
         if (existingData) {
-          // Update existing tieu chi
-          res = await fetch(`http://172.16.0.60:83/api/danh_muc/${level1Id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(tieuchiDataPut),
-          });
+          await LuuTieuChiCu(tieuchiDataPut, level1Id);
+
           setStatus('TieuChi');
         } else {
-          // Create new tieu chi
-          res = await fetch(`http://172.16.0.60:83/api/danh_muc`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(tieuchiDataPost),
-          });
+          await LuuTieuChiMoi(tieuchiDataPost);
+
           setStatus('TieuChi');
         }
 
-        const addLevel2Button = document.getElementById(
-          `add-level2-${level1Id}`,
-        );
-        if (addLevel2Button) addLevel2Button.classList.remove('hidden');
-
-        if (res && res.ok) {
-          const updatedData = await res.json();
-          setDataTieuChi((prevData) => {
-            const newData = [...prevData];
-            const index = newData.findIndex((tc) => tc.so_tieuchi === level1Id);
-            if (index !== -1) {
-              newData[index] = updatedData;
-            } else {
-              newData.push(updatedData);
-            }
-            return newData;
-          });
-
-          api['success']({
-            message: 'Thành công',
-            description: `Cấp 1 số ${level1Id} đã được lưu.`,
-          });
-        } else {
-          // throw new Error('Failed to save');
-          api['error']({
-            message: 'Thất bại',
-            description: 'Lỗi khi lưu',
-          });
-        }
+        api['success']({
+          message: 'Thành công',
+          description: `Tiêu chí số ${level1Id} đã được lưu.`,
+        });
       } catch (error) {
-        console.error('Error saving tieu chi:', error);
-
         api['error']({
           message: 'Thất bại',
           description: 'Đã có lỗi xảy ra khi lưu tiêu chí. Vui lòng thử lại.',
@@ -200,27 +130,132 @@ const ChiTieuCap1: React.FC = () => {
     } else {
       api['error']({
         message: 'Thất bại',
-        description: 'Vui lòng nhập đầy đủ thông tin cấp 1.',
+        description: 'Vui lòng nhập đầy đủ thông tin tiêu chí.',
       });
     }
   };
 
-  const addLevel2 = (level1Id: number) => {
-    setLevel2Counts((prevCounts) => ({
-      ...prevCounts,
-      [level1Id]: (prevCounts[level1Id] || 0) + 1,
-    }));
-
-    setLevel3Counts((prevCounts) => ({
-      ...prevCounts,
-      [level1Id]: {
-        ...prevCounts[level1Id],
-        [level2Counts[level1Id] + 1]: 0,
-      },
-    }));
+  const incrementLastNumber = (str: any) => {
+    const parts = str.split('.').map(Number);
+    parts[parts.length - 1]++;
+    return parts.join('.');
   };
 
-  const saveLevel2 = async (level1Id: number, level2Id: number) => {
+  const compareVersions = (a: any, b: any) => {
+    const partsA = a.split('.').map(Number);
+    const partsB = b.split('.').map(Number);
+    for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+      const numA = partsA[i] || 0;
+      const numB = partsB[i] || 0;
+      if (numA > numB) return 1;
+      if (numA < numB) return -1;
+    }
+    return 0;
+  };
+
+  const compareVersionsTieuMuc = (
+    a: string | number,
+    b: string | number,
+  ): number => {
+    const parseVersion = (v: string | number): number[] => {
+      if (typeof v === 'number') {
+        v = v.toString();
+      }
+      return v.split('.').map((part) => parseInt(part, 10));
+    };
+
+    const partsA = parseVersion(a);
+    const partsB = parseVersion(b);
+    const maxLength = Math.max(partsA.length, partsB.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      const numA = partsA[i] || 0;
+      const numB = partsB[i] || 0;
+      if (numA > numB) return 1;
+      if (numA < numB) return -1;
+    }
+    return 0;
+  };
+
+  const incrementLastNumberTieuMuc = (str: string | number): string => {
+    if (typeof str === 'number') {
+      str = str.toString();
+    }
+    const parts = str.split('.');
+    let lastPart = parseInt(parts[parts.length - 1], 10) + 1;
+    parts[parts.length - 1] = lastPart.toString();
+    return parts.join('.');
+  };
+
+  const findNextAvailableSoTieuMuc = (existingData: any[]): string => {
+    let maxSoTieuMuc = '0';
+    const usedSoTieuMuc = new Set();
+
+    for (const item of existingData) {
+      const soTieuMuc = item.so_tieu_muc.toString();
+      usedSoTieuMuc.add(soTieuMuc);
+      if (compareVersionsTieuMuc(soTieuMuc, maxSoTieuMuc) > 0) {
+        maxSoTieuMuc = soTieuMuc;
+      }
+    }
+
+    let newSoTieuMuc = incrementLastNumberTieuMuc(maxSoTieuMuc);
+    while (usedSoTieuMuc.has(newSoTieuMuc)) {
+      newSoTieuMuc = incrementLastNumberTieuMuc(newSoTieuMuc);
+    }
+
+    return newSoTieuMuc;
+  };
+
+  const themTieuMuc = async (level1Id: number) => {
+    try {
+      let existingData = dataTieuChi.find((tc) => tc.so_tieuchi === level1Id);
+      if (existingData) {
+        if (existingData.cac_tieu_muc.length <= 0) {
+          const tieumucDataPost = {
+            so_tieu_muc: `${existingData?.so_tieuchi}.${1}`,
+            ten_tieu_muc: '',
+            mo_ta_tieu_muc: '',
+            diem_toi_da: 1,
+            cac_tieu_muc_con: [],
+          };
+
+          await ThemTieuMuc(tieumucDataPost, existingData?.so_tieuchi);
+          setStatus('ThemTieuMuc');
+        } else {
+          const newSoTieuMuc = findNextAvailableSoTieuMuc(
+            existingData.cac_tieu_muc,
+          );
+
+          console.log(newSoTieuMuc);
+
+          const tieumucDataPostExisting = {
+            so_tieu_muc: newSoTieuMuc,
+            ten_tieu_muc: '',
+            mo_ta_tieu_muc: '',
+            diem_toi_da: 1,
+            cac_tieu_muc_con: [],
+          };
+
+          await ThemTieuMuc(tieumucDataPostExisting, existingData?.so_tieuchi);
+          setStatus('ThemTieuMuc');
+        }
+      }
+    } catch (error) {
+      console.log(error);
+
+      api['error']({
+        message: 'Thất bại',
+        description: 'Đã có lỗi xảy ra khi thêm tiểu mục. Vui lòng thử lại.',
+      });
+    }
+  };
+
+  const luuTieuMuc = async (
+    level1Id: number,
+    level2Id: number,
+    sotieumuc: string | undefined,
+  ) => {
     const tenTieumuc = (
       document.getElementById(
         `ten-tieumuc-cap2-${level1Id}-${level2Id}`,
@@ -232,8 +267,16 @@ const ChiTieuCap1: React.FC = () => {
       ) as HTMLInputElement
     )?.value;
 
+    if (!sotieumuc) {
+      api['error']({
+        message: 'Thất bại',
+        description: 'Số tiểu mục không tìm thấy. Vui lòng thử lại',
+      });
+      return;
+    }
+
     const tieumucDataPost = {
-      so_tieu_muc: Number(`${level1Id}.${level2Id}`),
+      so_tieu_muc: sotieumuc,
       ten_tieu_muc: tenTieumuc,
       mo_ta_tieu_muc: noidungTieumuc,
       diem_toi_da: 1,
@@ -247,67 +290,28 @@ const ChiTieuCap1: React.FC = () => {
       cac_tieu_muc_con: [],
     };
 
-    if (tenTieumuc && noidungTieumuc) {
+    if (tenTieumuc.trim() && noidungTieumuc.trim()) {
       try {
-        let res;
-
         let existingData1 = dataTieuChi.find(
           (tc) => tc.so_tieuchi === level1Id,
         );
 
         let existingData2 = existingData1?.cac_tieu_muc.find(
-          (tc) => tc.so_tieu_muc === Number(`${level1Id}.${level2Id}`),
+          (tc) => tc.so_tieu_muc === sotieumuc,
         );
         if (existingData2) {
-          // Update existing tieu chi
-          res = await fetch(
-            `http://172.16.0.60:83/api/danh_muc/${level1Id}/tieu_muc/${Number(
-              `${level1Id}.${level2Id}`,
-            )}`,
-            {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(tieumucDataPut),
-            },
-          );
+          await LuuTieuMucCu(tieumucDataPut, level1Id, sotieumuc);
           setStatus('TieuMuc');
         } else {
-          // Create new tieu chi
-          res = await fetch(
-            `http://172.16.0.60:83/api/danh_muc/${level1Id}/tieu_muc`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(tieumucDataPost),
-            },
-          );
+          await LuuTieuMucMoi(tieumucDataPost, level1Id);
           setStatus('TieuMuc');
         }
 
-        const addLevel2Button = document.getElementById(
-          `add-level2-${level1Id}`,
-        );
-        if (addLevel2Button) addLevel2Button.classList.remove('hidden');
-
-        if (res && res.ok) {
-          api['success']({
-            message: 'Thành công',
-            description: `Cấp 2 số ${level2Id} đã được lưu.`,
-          });
-        } else {
-          // throw new Error('Failed to save');
-          api['error']({
-            message: 'Thất bại',
-            description: 'Lỗi khi lưu',
-          });
-        }
+        api['success']({
+          message: 'Thành công',
+          description: `Tiểu mục số ${sotieumuc} đã được lưu.`,
+        });
       } catch (error) {
-        console.error('Error saving tieu chi:', error);
-
         api['error']({
           message: 'Thất bại',
           description: 'Đã có lỗi xảy ra khi lưu tiểu mục. Vui lòng thử lại.',
@@ -316,25 +320,83 @@ const ChiTieuCap1: React.FC = () => {
     } else {
       api['error']({
         message: 'Thất bại',
-        description: 'Vui lòng nhập đầy đủ thông tin cấp 2.',
+        description: 'Vui lòng nhập đầy đủ thông tin tiểu mục.',
       });
     }
   };
 
-  const addLevel3 = (level1Id: number, level2Id: number) => {
-    setLevel3Counts((prevCounts) => ({
-      ...prevCounts,
-      [level1Id]: {
-        ...prevCounts[level1Id],
-        [level2Id]: (prevCounts[level1Id]?.[level2Id] || 0) + 1,
-      },
-    }));
-  };
+  const themTieuMucCon = async (level1Id: number, level2Id: number) => {
+    try {
+      let existingData = dataTieuChi.find((tc) => tc.so_tieuchi === level1Id);
+      if (existingData) {
+        let existingData2 = existingData.cac_tieu_muc.find(
+          (tc) => tc.so_tieu_muc === `${existingData?.so_tieuchi}.${level2Id}`,
+        );
 
-  const saveLevel3 = async (
+        if (existingData2) {
+          if (existingData2.cac_tieu_muc_con.length <= 0) {
+            const tieumucconDataPost = {
+              so_tieu_muc_con: `${existingData2.so_tieu_muc}.${1}`,
+              ten_tieu_muc_con: '',
+              mo_ta_tieu_muc_con: '',
+              diem_toi_da: 1,
+            };
+
+            await ThemTieuMucCon(
+              tieumucconDataPost,
+              existingData?.so_tieuchi,
+              existingData2?.so_tieu_muc,
+            );
+            setStatus('ThemTieuMucCon');
+          } else {
+            const maxSoTieuMucCon = existingData2.cac_tieu_muc_con.reduce(
+              (max, tm) => {
+                return compareVersions(tm.so_tieu_muc_con, max) > 0
+                  ? tm.so_tieu_muc_con
+                  : max;
+              },
+              '0',
+            );
+
+            const newSoTieuMucCon = incrementLastNumber(maxSoTieuMucCon);
+
+            console.log(newSoTieuMucCon);
+
+            const tieumucconDataPostExisting = {
+              so_tieu_muc_con: newSoTieuMucCon,
+              ten_tieu_muc_con: '',
+              mo_ta_tieu_muc_con: '',
+              diem_toi_da: 1,
+            };
+
+            await ThemTieuMucCon(
+              tieumucconDataPostExisting,
+              existingData?.so_tieuchi,
+              existingData2?.so_tieu_muc,
+            );
+            setStatus('ThemTieuMucCon');
+          }
+        } else {
+          throw new Error('Không tìm thấy tiêu mục cấp 2');
+        }
+      } else {
+        throw new Error('Không tìm thấy tiêu chí cấp 1');
+      }
+    } catch (error) {
+      console.log(error);
+
+      api['error']({
+        message: 'Thất bại',
+        description:
+          'Đã có lỗi xảy ra khi thêm tiểu mục con. Vui lòng thử lại.',
+      });
+    }
+  };
+  const luuTieuMucCon = async (
     level1Id: number,
     level2Id: number,
     level3Id: number,
+    sotieumuccon: string,
   ) => {
     const tenTieumuccon = (
       document.getElementById(
@@ -347,9 +409,9 @@ const ChiTieuCap1: React.FC = () => {
       ) as HTMLInputElement
     )?.value;
 
-    if (tenTieumuccon && noidungTieumuccon) {
+    if (tenTieumuccon?.trim() && noidungTieumuccon?.trim()) {
       const tieumucconDataPost = {
-        so_tieu_muc_con: `${level1Id}.${level2Id}.${level3Id}`,
+        so_tieu_muc_con: `${sotieumuccon}`,
         ten_tieu_muc_con: tenTieumuccon,
         mo_ta_tieu_muc_con: noidungTieumuccon,
         diem_toi_da: 1,
@@ -362,71 +424,48 @@ const ChiTieuCap1: React.FC = () => {
       };
 
       try {
-        let res;
-
-        let existingData1 = dataTieuChi.find(
+        let existingData1: DanhMuc | undefined = dataTieuChi.find(
           (tc) => tc.so_tieuchi === level1Id,
         );
 
-        let existingData2 = existingData1?.cac_tieu_muc.find(
-          (tc) => tc.so_tieu_muc === Number(`${level1Id}.${level2Id}`),
-        );
+        if (!existingData1) {
+          throw new Error('Không tìm thấy tiêu chí');
+        }
 
-        let existingData3 = existingData2?.cac_tieu_muc_con.find(
-          (tc) => tc.so_tieu_muc_con === `${level1Id}.${level2Id}.${level3Id}`,
+        let existingData2: TieuMuc | undefined =
+          existingData1.cac_tieu_muc.find(
+            (tc) => tc.so_tieu_muc === `${level1Id}.${level2Id}`,
+          );
+
+        if (!existingData2) {
+          throw new Error('Không tìm thấy tiêu mục');
+        }
+
+        let existingData3 = existingData2.cac_tieu_muc_con.find(
+          (tc) => tc.so_tieu_muc_con === `${sotieumuccon}`,
         );
 
         if (existingData3) {
-          // Update existing tieu chi
-          res = await fetch(
-            `http://172.16.0.60:83/api/danh_muc/${level1Id}/tieu_muc/${Number(
-              `${level1Id}.${level2Id}`,
-            )}/tieu_muc_con/${level1Id}.${level2Id}.${level3Id}`,
-
-            {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(tieumucconDataPut),
-            },
+          await LuuTieuMucConCu(
+            tieumucconDataPut,
+            existingData1.so_tieuchi,
+            existingData2.so_tieu_muc,
+            existingData3.so_tieu_muc_con,
           );
           setStatus('TieuMucCon');
         } else {
-          // Create new tieu chi
-          res = await fetch(
-            `http://172.16.0.60:83/api/danh_muc/${level1Id}/tieu_muc/${Number(
-              `${level1Id}.${level2Id}`,
-            )}/tieu_muc_con`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(tieumucconDataPost),
-            },
+          await LuuTieuMucConMoi(
+            tieumucconDataPost,
+            existingData1.so_tieuchi,
+            existingData2.so_tieu_muc,
           );
           setStatus('TieuMucCon');
         }
 
-        const addLevel2Button = document.getElementById(
-          `add-level2-${level1Id}`,
-        );
-        if (addLevel2Button) addLevel2Button.classList.remove('hidden');
-
-        if (res && res.ok) {
-          api['success']({
-            message: 'Thành công',
-            description: `Cấp 3 số ${level1Id}.${level2Id}.${level3Id} đã được lưu.`,
-          });
-        } else {
-          // throw new Error('Failed to save');
-          api['error']({
-            message: 'Thất bại',
-            description:
-              'Đã có lỗi xảy ra khi lưu tiểu mục con. Vui lòng thử lại.',
-          });
-        }
+        api['success']({
+          message: 'Thành công',
+          description: `Tiểu mục con số ${existingData3?.so_tieu_muc_con} đã được lưu.`,
+        });
       } catch (error) {
         console.error('Error saving tieu chi:', error);
 
@@ -439,22 +478,60 @@ const ChiTieuCap1: React.FC = () => {
     } else {
       api['error']({
         message: 'Thất bại',
-        description: 'Vui lòng nhập đầy đủ thông tin cấp 3.',
+        description: 'Vui lòng nhập đầy đủ thông tin tiểu mục con.',
+      });
+    }
+  };
+  const xoaTieuMuc = async (level1Id: number, sotieumuc: string) => {
+    try {
+      await XoaTieuMuc(level1Id, sotieumuc);
+
+      setStatus('DeleteTieuMuc');
+      api['success']({
+        message: 'Thành công',
+        description: `Tiểu mục ${sotieumuc} đã được xóa.`,
+      });
+    } catch (error) {
+      console.error('Error deleting tieu muc:', error);
+      api['error']({
+        message: 'Thất bại',
+        description: 'Đã có lỗi xảy ra khi xóa tiểu mục. Vui lòng thử lại.',
+      });
+    }
+  };
+
+  const xoaTieuMucCon = async (
+    level1Id: number,
+    level2Id: number,
+    sotieumuccon: string,
+  ) => {
+    try {
+      let sotieumuc = `${level1Id}.${level2Id}`;
+      await XoaTieuMucCon(level1Id, sotieumuc, sotieumuccon);
+
+      setStatus('DeleteTieuMucCon');
+      api['success']({
+        message: 'Thành công',
+        description: `Tiểu mục con ${sotieumuccon} đã được xóa.`,
+      });
+    } catch (error) {
+      console.error('Error deleting tieu muc con:', error);
+      api['error']({
+        message: 'Thất bại',
+        description: 'Đã có lỗi xảy ra khi xóa tiểu mục con. Vui lòng thử lại.',
       });
     }
   };
   return (
-    // <TableThree/>
-
     <>
       {contextHolder}
       <div className="container">
-        <h2>Danh mục</h2>
+        <h1 className="font-bold">Danh mục</h1>
         <div id="form-container">
           <div id="levels-container">
             {[...Array(level1Count)].map((_, index) => {
               const level1Id = index + 1;
-              // const existingData = detailedTieuChi[level1Id];
+
               const existingData = dataTieuChi.find(
                 (tc) => tc.so_tieuchi === level1Id,
               );
@@ -464,7 +541,9 @@ const ChiTieuCap1: React.FC = () => {
                   className="level"
                   id={`level-1-${level1Id}`}
                 >
-                  <h3>Tiêu chí - {level1Id}</h3>
+                  <h3 className="text-danger font-bold">
+                    Tiêu chí - {level1Id}
+                  </h3>
                   <div className="input-group">
                     <input
                       type="text"
@@ -488,109 +567,135 @@ const ChiTieuCap1: React.FC = () => {
                       style={{ width: '70%' }}
                     />
                     <button
-                      className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90"
-                      onClick={() => saveLevel1(level1Id)}
+                      title="Lưu tiêu chí"
+                      className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1"
+                      onClick={() => luuTieuChi(level1Id)}
                     >
-                      Lưu cấp 1
+                      <SaveFilled />
                     </button>
 
                     {existingData && (
                       <button
-                        className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90"
-                        onClick={() => addLevel2(level1Id)}
+                        title="Thêm tiểu mục"
+                        className="justify-center rounded bg-success p-3 font-medium text-gray hover:bg-opacity-90"
+                        onClick={() => themTieuMuc(level1Id)}
                       >
-                        Thêm cấp 2
+                        <PlusCircleFilled />
                       </button>
                     )}
                   </div>
 
-                  {[...Array(level2Counts[level1Id] || 0)].map(
-                    (_, level2Index) => {
-                      const level2Id = level2Index + 1;
-                      const existingDataTieuMuc =
-                        existingData?.cac_tieu_muc.find(
-                          (tc) =>
-                            tc.so_tieu_muc ===
-                            Number(`${level1Id}.${level2Id}`),
-                        );
+                  {existingData?.cac_tieu_muc.map((item, level2Index) => {
+                    const level2Id = level2Index + 1;
 
-                      return (
-                        <>
-                          <div
-                            key={`level-2-${level1Id}-${level2Id}`}
-                            className="level"
-                            id={`level-2-${level1Id}-${level2Id}`}
-                          >
-                            <h3>
-                              Tiểu mục - {level1Id}.{level2Id}
-                            </h3>
-                            <div className="input-group">
-                              <input
-                                type="text"
-                                placeholder="Số"
-                                value={`${level1Id}.${level2Id}`}
-                                readOnly
-                                style={{ width: '5%' }}
-                              />
-                              <input
-                                type="text"
-                                placeholder="Tên Tiểu mục"
-                                defaultValue={
-                                  existingDataTieuMuc?.ten_tieu_muc || ''
-                                }
-                                id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                style={{ width: '10%' }}
-                              />
-                              <input
-                                type="text"
-                                placeholder="Nội dung Tiểu mục"
-                                defaultValue={
-                                  existingDataTieuMuc?.mo_ta_tieu_muc || ''
-                                }
-                                id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                style={{ width: '70%' }}
-                              />
+                    const existingDataTieuMuc = existingData?.cac_tieu_muc.find(
+                      (tc) => tc.so_tieu_muc === `${level1Id}.${level2Id}`,
+                    );
+
+                    return (
+                      <>
+                        <div
+                          key={`level-2-${level1Id}-${level2Id}`}
+                          className="level"
+                          id={`level-2-${level1Id}-${level2Id}`}
+                        >
+                          <h3 className="text-primary font-bold">
+                            Tiểu mục - {item?.so_tieu_muc}
+                          </h3>
+                          <div className="input-group">
+                            <input
+                              type="text"
+                              placeholder="Số"
+                              value={`${item?.so_tieu_muc}`}
+                              readOnly
+                              style={{ width: '5%' }}
+                            />
+                            <input
+                              type="text"
+                              placeholder="Tên Tiểu mục"
+                              defaultValue={item?.ten_tieu_muc || ''}
+                              id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
+                              style={{ width: '10%' }}
+                            />
+                            <input
+                              type="text"
+                              placeholder="Nội dung Tiểu mục"
+                              defaultValue={item?.mo_ta_tieu_muc || ''}
+                              id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
+                              style={{ width: '70%' }}
+                            />
+                            <button
+                              title="Lưu tiểu mục"
+                              className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1"
+                              onClick={() =>
+                                luuTieuMuc(
+                                  level1Id,
+                                  level2Id,
+                                  item?.so_tieu_muc,
+                                )
+                              }
+                            >
+                              <SaveFilled />
+                            </button>
+
+                            <Popconfirm
+                              title="Xóa tiểu mục"
+                              description="Bạn có chắc chắn muốn xóa tiểu mục này không?"
+                              icon={
+                                <QuestionCircleOutlined
+                                  style={{ color: 'red' }}
+                                />
+                              }
+                              onConfirm={() =>
+                                xoaTieuMuc(level1Id, item?.so_tieu_muc)
+                              }
+                              okButtonProps={{
+                                className: 'bg-blue-500 hover:bg-blue-600',
+                              }}
+                              okText="Xóa"
+                              cancelText="Không"
+                            >
                               <button
-                                className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90"
-                                onClick={() => saveLevel2(level1Id, level2Id)}
+                                title="Xóa tiểu mục"
+                                className="justify-center rounded bg-red-500 p-3 font-medium text-white hover:bg-opacity-90 me-1"
                               >
-                                Lưu cấp 2
+                                <DeleteFilled />
                               </button>
-                              {existingDataTieuMuc && (
+                            </Popconfirm>
+
+                            {item.ten_tieu_muc !== '' &&
+                              item.mo_ta_tieu_muc !== '' && (
                                 <button
-                                  className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90"
+                                  title="Thêm tiểu mục con"
+                                  className="justify-center rounded bg-success p-3 font-medium text-gray hover:bg-opacity-90"
                                   id={`add-level3-${level1Id}-${level2Id}`}
-                                  onClick={() => addLevel3(level1Id, level2Id)}
+                                  onClick={() =>
+                                    themTieuMucCon(level1Id, level2Id)
+                                  }
                                 >
-                                  Thêm cấp 3
+                                  <PlusCircleFilled />
                                 </button>
                               )}
-                            </div>
-                            {[
-                              ...Array(level3Counts[level1Id]?.[level2Id] || 0),
-                            ].map((_, level3Index) => {
+                          </div>
+
+                          {existingDataTieuMuc?.cac_tieu_muc_con.map(
+                            (item, level3Index) => {
                               const level3Id = level3Index + 1;
-                              const existingDataTieuMucCon =
-                                existingDataTieuMuc?.cac_tieu_muc_con.find(
-                                  (tc) =>
-                                    tc.so_tieu_muc_con ===
-                                    `${level1Id}.${level2Id}.${level3Id}`,
-                                );
+
                               return (
                                 <div
                                   key={`level-3-${level1Id}-${level2Id}-${level3Id}`}
                                   className="level"
                                   id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
                                 >
-                                  <h3>
-                                    Tiểu mục con - {level1Id}.{level2Id}.
-                                    {level3Id}
+                                  <h3 className="text-success font-bold">
+                                    Tiểu mục con - {item?.so_tieu_muc_con}
                                   </h3>
                                   <div className="input-group">
                                     <input
                                       type="text"
                                       placeholder="Số"
-                                      value={`${level1Id}.${level2Id}.${level3Id}`}
+                                      value={`${item?.so_tieu_muc_con}`}
                                       readOnly
                                       style={{ width: '5%' }}
                                     />
@@ -600,8 +705,7 @@ const ChiTieuCap1: React.FC = () => {
                                       id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
                                       style={{ width: '10%' }}
                                       defaultValue={
-                                        existingDataTieuMucCon?.ten_tieu_muc_con ||
-                                        ''
+                                        item?.ten_tieu_muc_con || ''
                                       }
                                     />
                                     <input
@@ -610,27 +714,62 @@ const ChiTieuCap1: React.FC = () => {
                                       id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
                                       style={{ width: '70%' }}
                                       defaultValue={
-                                        existingDataTieuMucCon?.mo_ta_tieu_muc_con ||
-                                        ''
+                                        item?.mo_ta_tieu_muc_con || ''
                                       }
                                     />
                                     <button
-                                      className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90"
+                                      title="Lưu tiểu mục con"
+                                      className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1"
                                       onClick={() =>
-                                        saveLevel3(level1Id, level2Id, level3Id)
+                                        luuTieuMucCon(
+                                          level1Id,
+                                          level2Id,
+                                          level3Id,
+                                          item?.so_tieu_muc_con,
+                                        )
                                       }
                                     >
-                                      Lưu cấp 3
+                                      <SaveFilled />
                                     </button>
+
+                                    <Popconfirm
+                                      title="Xóa tiểu mục con"
+                                      description="Bạn có chắc chắn muốn xóa tiểu mục con này không?"
+                                      icon={
+                                        <QuestionCircleOutlined
+                                          style={{ color: 'red' }}
+                                        />
+                                      }
+                                      onConfirm={() =>
+                                        xoaTieuMucCon(
+                                          level1Id,
+                                          level2Id,
+                                          item?.so_tieu_muc_con,
+                                        )
+                                      }
+                                      okButtonProps={{
+                                        className:
+                                          'bg-blue-500 hover:bg-blue-600',
+                                      }}
+                                      okText="Xóa"
+                                      cancelText="Không"
+                                    >
+                                      <button
+                                        title="Xóa tiểu mục con"
+                                        className="justify-center rounded bg-red-500 p-3 font-medium text-white hover:bg-opacity-90"
+                                      >
+                                        <DeleteFilled />
+                                      </button>
+                                    </Popconfirm>
                                   </div>
                                 </div>
                               );
-                            })}
-                          </div>
-                        </>
-                      );
-                    },
-                  )}
+                            },
+                          )}
+                        </div>
+                      </>
+                    );
+                  })}
                 </div>
               );
             })}
