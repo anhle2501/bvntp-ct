@@ -42,7 +42,7 @@ const ChiTieuCap1: React.FC = () => {
   useEffect(() => {
     const fetchDataTieuChi = async () => {
       try {
-        let res = await fetch('http://172.16.0.60:83/api/danh_muc', {
+        let res = await fetch('http://172.16.0.60:883/api/danh_muc', {
           cache: 'no-store',
         });
         if (res && res.ok) {
