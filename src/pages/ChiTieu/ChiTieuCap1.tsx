@@ -79,7 +79,6 @@ const ChiTieuCap1: React.FC = () => {
         if (data) {
           // Sắp xếp toàn bộ cấu trúc dữ liệu
           const sortedData = sortEntireStructure(data);
-
           // setDataTieuChi(data?.danh_muc);
           setDataTieuChi(sortedData);
           initializeLevelCounts(data?.danh_muc);
