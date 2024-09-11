@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './ChiTieuCap1.css';
-import { notification, Popconfirm } from 'antd';
+import { message, Popconfirm } from 'antd';
 import {
   DeleteFilled,
   PlusCircleFilled,
@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import { DanhMuc } from '../../types/danhmuc';
 import {
+  DanhSachDanhMuc,
   LuuTieuChiCu,
   LuuTieuChiMoi,
   LuuTieuMucConCu,
@@ -34,26 +35,62 @@ const ChiTieuCap1: React.FC = () => {
   const [dataTieuChi, setDataTieuChi] = useState<DanhMuc[]>([]);
 
   const [level1Count] = useState<number>(83);
-  // const [level2Counts, setLevel2Counts] = useState<Level2Count>({});
-  // const [level3Counts, setLevel3Counts] = useState<Level3Count>({});
+
   const [status, setStatus] = useState<string>('');
 
-  const [api, contextHolder] = notification.useNotification();
+  const [forceUpdate, setForceUpdate] = useState(0);
+
+  const [messageApi, contextHolder] = message.useMessage();
+
+  // Hàm so sánh để sắp xếp so_tieu_muc_con
+  function compareSoTieuMucCon(a: string, b: string): number {
+    const aParts = a.split('.').map(Number);
+    const bParts = b.split('.').map(Number);
+    for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+      if (aParts[i] === undefined) return -1;
+      if (bParts[i] === undefined) return 1;
+      if (aParts[i] !== bParts[i]) return aParts[i] - bParts[i];
+    }
+    return 0;
+  }
+
+  // Hàm sắp xếp danh sách tiểu mục con
+  function sortTieuMucCon(tieuMucConList: any[]): any[] {
+    return tieuMucConList.sort((a, b) =>
+      compareSoTieuMucCon(a.so_tieu_muc_con, b.so_tieu_muc_con),
+    );
+  }
+
+  // Hàm sắp xếp toàn bộ cấu trúc dữ liệu
+  function sortEntireStructure(data: any): any {
+    return data.danh_muc.map((danhMuc: any) => ({
+      ...danhMuc,
+      cac_tieu_muc: danhMuc.cac_tieu_muc.map((tieuMuc: any) => ({
+        ...tieuMuc,
+        cac_tieu_muc_con: sortTieuMucCon(tieuMuc.cac_tieu_muc_con),
+      })),
+    }));
+  }
+
   useEffect(() => {
     const fetchDataTieuChi = async () => {
       try {
-        let res = await fetch('http://172.16.0.60:83/api/danh_muc', {
-          cache: 'no-store',
-        });
-        if (res && res.ok) {
-          let data = await res.json();
+        let data = await DanhSachDanhMuc();
+        if (data) {
+          // Sắp xếp toàn bộ cấu trúc dữ liệu
+          const sortedData = sortEntireStructure(data);
 
-          setDataTieuChi(data?.danh_muc);
+          // setDataTieuChi(data?.danh_muc);
+          setDataTieuChi(sortedData);
           initializeLevelCounts(data?.danh_muc);
           setStatus('Fetch');
         }
       } catch (error) {
         console.log(error);
+        messageApi.open({
+          type: 'error',
+          content: `Đã có lỗi xảy ra trong quá trình hiển thị dữ liệu.`,
+        });
       }
     };
     fetchDataTieuChi();
@@ -75,10 +112,8 @@ const ChiTieuCap1: React.FC = () => {
         newLevel3Counts[level1Id][level2Id] = tieuMuc.cac_tieu_muc_con.length;
       });
     });
-
-    // setLevel2Counts(newLevel2Counts);
-    // setLevel3Counts(newLevel3Counts);
   };
+
   const luuTieuChi = async (level1Id: number) => {
     const tenTieuchi = (
       document.getElementById(
@@ -91,7 +126,7 @@ const ChiTieuCap1: React.FC = () => {
       ) as HTMLInputElement
     )?.value;
 
-    if (tenTieuchi.trim() && noidungTieuchi.trim()) {
+    if (tenTieuchi?.trim() !== '' && noidungTieuchi?.trim() !== '') {
       const tieuchiDataPost = {
         so_tieuchi: level1Id,
         ten_tieuchi: tenTieuchi,
@@ -116,21 +151,20 @@ const ChiTieuCap1: React.FC = () => {
 
           setStatus('TieuChi');
         }
-
-        api['success']({
-          message: 'Thành công',
-          description: `Tiêu chí số ${level1Id} đã được lưu.`,
+        messageApi.open({
+          type: 'success',
+          content: `Tiêu chí số ${level1Id} đã được lưu.`,
         });
       } catch (error) {
-        api['error']({
-          message: 'Thất bại',
-          description: 'Đã có lỗi xảy ra khi lưu tiêu chí. Vui lòng thử lại.',
+        messageApi.open({
+          type: 'error',
+          content: `Đã có lỗi xảy ra khi lưu tiêu chí. Vui lòng thử lại.`,
         });
       }
     } else {
-      api['error']({
-        message: 'Thất bại',
-        description: 'Vui lòng nhập đầy đủ thông tin tiêu chí.',
+      messageApi.open({
+        type: 'error',
+        content: `Vui lòng nhập đầy đủ thông tin tiêu chí.`,
       });
     }
   };
@@ -243,10 +277,9 @@ const ChiTieuCap1: React.FC = () => {
       }
     } catch (error) {
       console.log(error);
-
-      api['error']({
-        message: 'Thất bại',
-        description: 'Đã có lỗi xảy ra khi thêm tiểu mục. Vui lòng thử lại.',
+      messageApi.open({
+        type: 'error',
+        content: `Đã có lỗi xảy ra khi thêm tiểu mục. Vui lòng thử lại.`,
       });
     }
   };
@@ -268,10 +301,11 @@ const ChiTieuCap1: React.FC = () => {
     )?.value;
 
     if (!sotieumuc) {
-      api['error']({
-        message: 'Thất bại',
-        description: 'Số tiểu mục không tìm thấy. Vui lòng thử lại',
+      messageApi.open({
+        type: 'error',
+        content: `Số tiểu mục không tìm thấy. Vui lòng thử lại`,
       });
+
       return;
     }
 
@@ -290,7 +324,7 @@ const ChiTieuCap1: React.FC = () => {
       cac_tieu_muc_con: [],
     };
 
-    if (tenTieumuc.trim() && noidungTieumuc.trim()) {
+    if (tenTieumuc?.trim() !== '' && noidungTieumuc?.trim() !== '') {
       try {
         let existingData1 = dataTieuChi.find(
           (tc) => tc.so_tieuchi === level1Id,
@@ -306,21 +340,20 @@ const ChiTieuCap1: React.FC = () => {
           await LuuTieuMucMoi(tieumucDataPost, level1Id);
           setStatus('TieuMuc');
         }
-
-        api['success']({
-          message: 'Thành công',
-          description: `Tiểu mục số ${sotieumuc} đã được lưu.`,
+        messageApi.open({
+          type: 'success',
+          content: `Tiểu mục số ${sotieumuc} đã được lưu.`,
         });
       } catch (error) {
-        api['error']({
-          message: 'Thất bại',
-          description: 'Đã có lỗi xảy ra khi lưu tiểu mục. Vui lòng thử lại.',
+        messageApi.open({
+          type: 'error',
+          content: `Đã có lỗi xảy ra khi lưu tiểu mục. Vui lòng thử lại.`,
         });
       }
     } else {
-      api['error']({
-        message: 'Thất bại',
-        description: 'Vui lòng nhập đầy đủ thông tin tiểu mục.',
+      messageApi.open({
+        type: 'error',
+        content: `Vui lòng nhập đầy đủ thông tin tiểu mục.`,
       });
     }
   };
@@ -339,7 +372,8 @@ const ChiTieuCap1: React.FC = () => {
               so_tieu_muc_con: `${existingData2.so_tieu_muc}.${1}`,
               ten_tieu_muc_con: '',
               mo_ta_tieu_muc_con: '',
-              diem_toi_da: 1,
+              diem_toi_da: '',
+              muc: '',
             };
 
             await ThemTieuMucCon(
@@ -366,7 +400,8 @@ const ChiTieuCap1: React.FC = () => {
               so_tieu_muc_con: newSoTieuMucCon,
               ten_tieu_muc_con: '',
               mo_ta_tieu_muc_con: '',
-              diem_toi_da: 1,
+              diem_toi_da: '',
+              muc: '',
             };
 
             await ThemTieuMucCon(
@@ -384,14 +419,131 @@ const ChiTieuCap1: React.FC = () => {
       }
     } catch (error) {
       console.log(error);
-
-      api['error']({
-        message: 'Thất bại',
-        description:
-          'Đã có lỗi xảy ra khi thêm tiểu mục con. Vui lòng thử lại.',
+      messageApi.open({
+        type: 'error',
+        content: `Đã có lỗi xảy ra khi thêm tiểu mục con. Vui lòng thử lại.`,
       });
     }
   };
+
+  const chenThemTieuMucCon = async (
+    level1Id: number,
+    level2Id: number,
+    currentSoTieuMucCon: string,
+  ) => {
+    try {
+      let existingData = dataTieuChi.find((tc) => tc.so_tieuchi === level1Id);
+      if (existingData) {
+        let existingData2: any = existingData.cac_tieu_muc.find(
+          (tc) => tc.so_tieu_muc === `${existingData?.so_tieuchi}.${level2Id}`,
+        );
+
+        if (existingData2) {
+          // Tính toán số tiểu mục con mới
+          const parts = currentSoTieuMucCon.split('.');
+          const newLastPart = parseInt(parts[parts.length - 1]) + 1;
+          const newSoTieuMucCon = [...parts.slice(0, -1), newLastPart].join(
+            '.',
+          );
+
+          // Chuẩn bị tiểu mục con mới
+          const newTieuMucCon = {
+            so_tieu_muc_con: newSoTieuMucCon,
+            ten_tieu_muc_con: '',
+            mo_ta_tieu_muc_con: '',
+            diem_toi_da: '',
+            muc: '',
+          };
+
+          // Tìm vị trí chèn
+          const insertIndex =
+            existingData2.cac_tieu_muc_con.findIndex(
+              (tmc: any) => tmc.so_tieu_muc_con === currentSoTieuMucCon,
+            ) + 1;
+
+          // Tạo mảng mới với tiểu mục con mới được chèn vào
+          let updatedTieuMucCon = [
+            ...existingData2.cac_tieu_muc_con.slice(0, insertIndex),
+            newTieuMucCon,
+            ...existingData2.cac_tieu_muc_con.slice(insertIndex),
+          ];
+
+          // Cập nhật so_tieu_muc_con cho các mục sau
+          const updatePromises = [];
+          for (let i = insertIndex + 1; i < updatedTieuMucCon.length; i++) {
+            const tmcParts = updatedTieuMucCon[i].so_tieu_muc_con.split('.');
+            tmcParts[tmcParts.length - 1] = (
+              parseInt(tmcParts[tmcParts.length - 1]) + 1
+            ).toString();
+            const updatedSoTieuMucCon = tmcParts.join('.');
+
+            // Chuẩn bị dữ liệu cập nhật
+            const updateData = {
+              ...updatedTieuMucCon[i],
+              so_tieu_muc_con: updatedSoTieuMucCon,
+            };
+
+            // Tạo promise cập nhật
+            const updatePromise = await LuuTieuMucConCu(
+              updateData,
+              existingData.so_tieuchi,
+              existingData2.so_tieu_muc,
+
+              updatedTieuMucCon[i].so_tieu_muc_con,
+            );
+
+            updatePromises.push(updatePromise);
+
+            // Cập nhật dữ liệu cục bộ
+            updatedTieuMucCon[i].so_tieu_muc_con = updatedSoTieuMucCon;
+            // updatedTieuMucCon[i] = {
+            //   ...updatedTieuMucCon[i],
+            //   so_tieu_muc_con: updatedSoTieuMucCon,
+            // };
+          }
+
+          // Thêm tiểu mục con mới
+          const addNewPromise = await LuuTieuMucConMoi(
+            newTieuMucCon,
+            existingData.so_tieuchi,
+            existingData2.so_tieu_muc,
+          );
+
+          updatePromises.push(addNewPromise);
+
+          // Cập nhật state cục bộ
+          const updatedDataTieuChi = [...dataTieuChi];
+          // const updatedDataTieuChi = JSON.parse(JSON.stringify(dataTieuChi));
+          const updatedTieuChiIndex = updatedDataTieuChi.findIndex(
+            (tc: any) => tc.so_tieuchi === level1Id,
+          );
+          const updatedTieuMucIndex = updatedDataTieuChi[
+            updatedTieuChiIndex
+          ].cac_tieu_muc.findIndex(
+            (tm: any) =>
+              tm.so_tieu_muc === `${existingData?.so_tieuchi}.${level2Id}`,
+          );
+          updatedDataTieuChi[updatedTieuChiIndex].cac_tieu_muc[
+            updatedTieuMucIndex
+          ].cac_tieu_muc_con = updatedTieuMucCon as [typeof newTieuMucCon];
+
+          setDataTieuChi(updatedDataTieuChi);
+          setForceUpdate(Date.now()); // Thêm state forceUpdate nếu chưa có
+        } else {
+          throw new Error('Không tìm thấy tiêu mục cấp 2');
+        }
+      } else {
+        throw new Error('Không tìm thấy tiêu chí cấp 1');
+      }
+    } catch (error) {
+      console.log(error);
+      messageApi.open({
+        type: 'error',
+        content: `Đã có lỗi xảy ra khi thêm tiểu mục con. Vui lòng thử lại.`,
+      });
+    }
+  };
+
   const luuTieuMucCon = async (
     level1Id: number,
     level2Id: number,
@@ -408,19 +560,34 @@ const ChiTieuCap1: React.FC = () => {
         `noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`,
       ) as HTMLInputElement
     )?.value;
-
-    if (tenTieumuccon?.trim() && noidungTieumuccon?.trim()) {
+    const mucTieumuccon = (
+      document.getElementById(
+        `muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`,
+      ) as HTMLInputElement
+    )?.value;
+    const diemTieumuccon = (
+      document.getElementById(
+        `diem-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`,
+      ) as HTMLInputElement
+    )?.value;
+    if (
+      tenTieumuccon?.trim() !== '' &&
+      noidungTieumuccon?.trim() !== '' &&
+      mucTieumuccon?.trim() !== ''
+    ) {
       const tieumucconDataPost = {
         so_tieu_muc_con: `${sotieumuccon}`,
         ten_tieu_muc_con: tenTieumuccon,
         mo_ta_tieu_muc_con: noidungTieumuccon,
-        diem_toi_da: 1,
+        muc: mucTieumuccon,
+        diem_toi_da: '',
       };
 
       const tieumucconDataPut = {
         ten_tieu_muc_con: tenTieumuccon,
         mo_ta_tieu_muc_con: noidungTieumuccon,
-        diem_toi_da: 1,
+        muc: mucTieumuccon,
+        diem_toi_da: '',
       };
 
       try {
@@ -461,24 +628,21 @@ const ChiTieuCap1: React.FC = () => {
           );
           setStatus('TieuMucCon');
         }
-
-        api['success']({
-          message: 'Thành công',
-          description: `Tiểu mục con số ${existingData3?.so_tieu_muc_con} đã được lưu.`,
+        messageApi.open({
+          type: 'success',
+          content: `Tiểu mục con số ${existingData3?.so_tieu_muc_con} đã được lưu.`,
         });
       } catch (error) {
         console.error('Error saving tieu chi:', error);
-
-        api['error']({
-          message: 'Thất bại',
-          description:
-            'Đã có lỗi xảy ra khi lưu tiểu mục con. Vui lòng thử lại.',
+        messageApi.open({
+          type: 'error',
+          content: `Đã có lỗi xảy ra khi lưu tiểu mục con. Vui lòng thử lại.`,
         });
       }
     } else {
-      api['error']({
-        message: 'Thất bại',
-        description: 'Vui lòng nhập đầy đủ thông tin tiểu mục con.',
+      messageApi.open({
+        type: 'error',
+        content: `Vui lòng nhập đầy đủ thông tin tiểu mục con.`,
       });
     }
   };
@@ -487,15 +651,15 @@ const ChiTieuCap1: React.FC = () => {
       await XoaTieuMuc(level1Id, sotieumuc);
 
       setStatus('DeleteTieuMuc');
-      api['success']({
-        message: 'Thành công',
-        description: `Tiểu mục ${sotieumuc} đã được xóa.`,
+      messageApi.open({
+        type: 'success',
+        content: `Tiểu mục ${sotieumuc} đã được xóa.`,
       });
     } catch (error) {
       console.error('Error deleting tieu muc:', error);
-      api['error']({
-        message: 'Thất bại',
-        description: 'Đã có lỗi xảy ra khi xóa tiểu mục. Vui lòng thử lại.',
+      messageApi.open({
+        type: 'error',
+        content: `Đã có lỗi xảy ra khi xóa tiểu mục. Vui lòng thử lại.`,
       });
     }
   };
@@ -510,18 +674,31 @@ const ChiTieuCap1: React.FC = () => {
       await XoaTieuMucCon(level1Id, sotieumuc, sotieumuccon);
 
       setStatus('DeleteTieuMucCon');
-      api['success']({
-        message: 'Thành công',
-        description: `Tiểu mục con ${sotieumuccon} đã được xóa.`,
+      messageApi.open({
+        type: 'success',
+        content: `Tiểu mục con ${sotieumuccon} đã được xóa.`,
       });
     } catch (error) {
       console.error('Error deleting tieu muc con:', error);
-      api['error']({
-        message: 'Thất bại',
-        description: 'Đã có lỗi xảy ra khi xóa tiểu mục con. Vui lòng thử lại.',
+      messageApi.open({
+        type: 'error',
+        content: `Đã có lỗi xảy ra khi xóa tiểu mục con. Vui lòng thử lại.`,
       });
     }
   };
+
+  const tx = document.getElementsByTagName('textarea');
+  for (let i = 0; i < tx.length; i++) {
+    tx[i].style.height = tx[i].scrollHeight + 'px';
+    tx[i].style.overflowY = 'hidden';
+    tx[i].addEventListener('input', OnInput, false);
+  }
+
+  function OnInput(this: HTMLTextAreaElement) {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+  }
+
   return (
     <>
       {contextHolder}
@@ -544,6 +721,7 @@ const ChiTieuCap1: React.FC = () => {
                   <h3 className="text-danger font-bold">
                     Tiêu chí - {level1Id}
                   </h3>
+
                   <div className="input-group">
                     <input
                       type="text"
@@ -552,6 +730,7 @@ const ChiTieuCap1: React.FC = () => {
                       readOnly
                       style={{ width: '5%' }}
                     />
+
                     <input
                       type="text"
                       placeholder="Tên Tiêu chí"
@@ -559,16 +738,27 @@ const ChiTieuCap1: React.FC = () => {
                       defaultValue={existingData?.ten_tieuchi || ''}
                       style={{ width: '10%' }}
                     />
-                    <input
-                      type="text"
-                      placeholder="Nội dung Tiêu chí"
+                    <textarea
                       id={`noidung-tieuchi-cap1-${level1Id}`}
+                      className=""
                       defaultValue={existingData?.mo_ta || ''}
-                      style={{ width: '70%' }}
-                    />
+                      rows={2}
+                      style={{
+                        width: '70%',
+                        resize: 'none',
+                        overflow: 'hidden',
+                        verticalAlign: 'middle',
+                        padding: '0 10px',
+                        lineHeight: '2.8',
+                        border: '1px solid #ced4da',
+                        borderRadius: '0.25rem',
+                      }}
+                      placeholder="Nội dung Tiêu chí"
+                    ></textarea>
+
                     <button
                       title="Lưu tiêu chí"
-                      className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1"
+                      className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1 ml-1"
                       onClick={() => luuTieuChi(level1Id)}
                     >
                       <SaveFilled />
@@ -595,7 +785,7 @@ const ChiTieuCap1: React.FC = () => {
                     return (
                       <>
                         <div
-                          key={`level-2-${level1Id}-${level2Id}`}
+                          key={item?.so_tieu_muc}
                           className="level"
                           id={`level-2-${level1Id}-${level2Id}`}
                         >
@@ -617,16 +807,27 @@ const ChiTieuCap1: React.FC = () => {
                               id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
                               style={{ width: '10%' }}
                             />
-                            <input
-                              type="text"
-                              placeholder="Nội dung Tiểu mục"
-                              defaultValue={item?.mo_ta_tieu_muc || ''}
+
+                            <textarea
                               id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
-                              style={{ width: '70%' }}
-                            />
+                              className=""
+                              defaultValue={item?.mo_ta_tieu_muc || ''}
+                              rows={2}
+                              style={{
+                                width: '70%',
+                                resize: 'none',
+                                overflow: 'hidden',
+                                verticalAlign: 'middle',
+                                padding: '0 10px',
+                                lineHeight: '2.8',
+                                border: '1px solid #ced4da',
+                                borderRadius: '0.25rem',
+                              }}
+                              placeholder="Nội dung Tiểu mục"
+                            ></textarea>
                             <button
                               title="Lưu tiểu mục"
-                              className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1"
+                              className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1 ml-1"
                               onClick={() =>
                                 luuTieuMuc(
                                   level1Id,
@@ -684,14 +885,18 @@ const ChiTieuCap1: React.FC = () => {
 
                               return (
                                 <div
-                                  key={`level-3-${level1Id}-${level2Id}-${level3Id}`}
+                                  key={`${item?.so_tieu_muc_con}-${forceUpdate}`}
+                                  data-so-tieu-muc-con={item?.so_tieu_muc_con}
                                   className="level"
                                   id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
                                 >
                                   <h3 className="text-success font-bold">
                                     Tiểu mục con - {item?.so_tieu_muc_con}
                                   </h3>
-                                  <div className="input-group">
+                                  <div
+                                    className="input-group"
+                                    key={item?.so_tieu_muc_con}
+                                  >
                                     <input
                                       type="text"
                                       placeholder="Số"
@@ -705,21 +910,44 @@ const ChiTieuCap1: React.FC = () => {
                                       id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
                                       style={{ width: '10%' }}
                                       defaultValue={
-                                        item?.ten_tieu_muc_con || ''
+                                        item?.ten_tieu_muc_con
+                                          ? item?.ten_tieu_muc_con
+                                          : ''
                                       }
                                     />
                                     <input
+                                      className="ml-1"
                                       type="text"
-                                      placeholder="Nội dung Tiểu mục con"
-                                      id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                      style={{ width: '70%' }}
-                                      defaultValue={
-                                        item?.mo_ta_tieu_muc_con || ''
-                                      }
+                                      placeholder="Mức"
+                                      id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
+                                      style={{ width: '10%' }}
+                                      defaultValue={item?.muc ? item?.muc : ''}
                                     />
+                                    <textarea
+                                      id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
+                                      className=""
+                                      defaultValue={
+                                        item?.mo_ta_tieu_muc_con
+                                          ? item?.mo_ta_tieu_muc_con
+                                          : ''
+                                      }
+                                      rows={2}
+                                      style={{
+                                        width: '55%',
+                                        resize: 'none',
+                                        overflow: 'hidden',
+                                        verticalAlign: 'middle',
+                                        padding: '10px 10px',
+                                        lineHeight: '1.5',
+                                        border: '1px solid #ced4da',
+                                        borderRadius: '0.25rem',
+                                      }}
+                                      placeholder="Nội dung Tiểu mục con"
+                                    ></textarea>
+
                                     <button
                                       title="Lưu tiểu mục con"
-                                      className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1"
+                                      className="justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1 ml-1"
                                       onClick={() =>
                                         luuTieuMucCon(
                                           level1Id,
@@ -756,11 +984,30 @@ const ChiTieuCap1: React.FC = () => {
                                     >
                                       <button
                                         title="Xóa tiểu mục con"
-                                        className="justify-center rounded bg-red-500 p-3 font-medium text-white hover:bg-opacity-90"
+                                        className="justify-center rounded bg-red-500 p-3 font-medium text-white hover:bg-opacity-90 me-1"
                                       >
                                         <DeleteFilled />
                                       </button>
                                     </Popconfirm>
+
+                                    {item.ten_tieu_muc_con !== '' &&
+                                      item.mo_ta_tieu_muc_con !== '' &&
+                                      item.muc !== '' && (
+                                        <button
+                                          title="Thêm tiểu mục con"
+                                          className="justify-center rounded bg-success p-3 font-medium text-gray hover:bg-opacity-90"
+                                          id={`add-level3-${level1Id}-${level2Id}`}
+                                          onClick={() =>
+                                            chenThemTieuMucCon(
+                                              level1Id,
+                                              level2Id,
+                                              item?.so_tieu_muc_con,
+                                            )
+                                          }
+                                        >
+                                          <PlusCircleFilled />
+                                        </button>
+                                      )}
                                   </div>
                                 </div>
                               );
