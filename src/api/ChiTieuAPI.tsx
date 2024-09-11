@@ -1,3 +1,12 @@
+export const DanhSachDanhMuc = async () => {
+  try {
+    let res = await fetch(`http://172.16.0.60:883/api/danh_muc`);
+    return res.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const LuuTieuChiMoi = async (data: any) => {
   try {
     await fetch(`http://172.16.0.60:883/api/danh_muc`, {
