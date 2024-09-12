@@ -899,7 +899,7 @@ const ChiTieuCap1: React.FC = () => {
                                 >
                                   <SaveFilled />
                                 </button>
-                                {item?.cac_tieu_muc_con.length < 0 ? (
+                                {/* {item?.cac_tieu_muc_con.length < 0 ? (
                                   <Popconfirm
                                     title="Xóa tiểu mục"
                                     description="Bạn có chắc chắn muốn xóa tiểu mục này không?"
@@ -927,7 +927,7 @@ const ChiTieuCap1: React.FC = () => {
                                   </Popconfirm>
                                 ) : (
                                   <></>
-                                )}
+                                )} */}
 
                                 {item.ten_tieu_muc !== '' &&
                                   item.mo_ta_tieu_muc !== '' && (
@@ -1034,7 +1034,7 @@ const ChiTieuCap1: React.FC = () => {
                                           <SaveFilled />
                                         </button>
 
-                                        <Popconfirm
+                                        {/* <Popconfirm
                                           title="Xóa tiểu mục con"
                                           description="Bạn có chắc chắn muốn xóa tiểu mục con này không?"
                                           icon={
@@ -1062,7 +1062,7 @@ const ChiTieuCap1: React.FC = () => {
                                           >
                                             <DeleteFilled />
                                           </button>
-                                        </Popconfirm>
+                                        </Popconfirm> */}
 
                                         {item.ten_tieu_muc_con !== '' &&
                                           item.mo_ta_tieu_muc_con !== '' &&
