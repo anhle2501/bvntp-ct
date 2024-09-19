@@ -6,6 +6,7 @@ import PageTitle from './components/PageTitle';
 import SignIn from './pages/Authentication/SignIn';
 import DefaultLayout from './layout/DefaultLayout';
 import ChiTieuCap1 from './pages/ChiTieu/ChiTieuCap1';
+import ChecklistTable from './pages/ChiTieu/ChecklistTable';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -21,10 +22,12 @@ function App() {
 
   return loading ? (
     <Loader />
-  ) : (pathname === '/login') ?  <SignIn /> :(
+  ) : pathname === '/login' ? (
+    <SignIn />
+  ) : (
     <DefaultLayout>
       <Routes>
-         {/* <Route
+        {/* <Route
           index
           element={
             <>
@@ -115,15 +118,24 @@ function App() {
           }
         /> */}
         <Route
-          path="/chi-tieu"
+          path="/quan-ly-tieu-chi"
           element={
             <>
-              <PageTitle title="Chỉ tiêu | NTP" />
-              <ChiTieuCap1/>
+              <PageTitle title="Quản lý tiêu chí | NTP" />
+              <ChiTieuCap1 />
             </>
           }
         />
-         {/* <Route
+        <Route
+          path="/tieu-chi-khoa-phong"
+          element={
+            <>
+              <PageTitle title="Tiêu chí khoa phòng | NTP" />
+              <ChecklistTable />
+            </>
+          }
+        />
+        {/* <Route
           path="/chi-tieu-cap-2"
           element={
             <>
