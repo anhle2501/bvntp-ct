@@ -1,7 +1,37 @@
+import axios from 'axios';
+
 export const DanhSachDanhMuc = async () => {
   try {
     let res = await fetch(`http://172.16.0.60:883/api/danh_muc`);
     return res.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const DanhSachDanhGia = async () => {
+  try {
+    let res = await fetch(`http://172.16.0.60:883/api/danh_gia_khoa`);
+    return res.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const CapNhatDanhGia = async (data: any) => {
+  try {
+    await axios.put(
+      `http://172.16.0.60:883/api/cap_nhat_danhgia_tieu_muc`,
+      data,
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const ThemMoiDanhGia = async (data: any) => {
+  try {
+    await axios.post(`http://172.16.0.60:883/api/danh_gia_khoa`, data);
   } catch (error) {
     console.log(error);
   }

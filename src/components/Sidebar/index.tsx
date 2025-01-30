@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import Logo from '../../images/logo/ntp_logo_offical.jpg';
+import { UserContext } from '../../context/UserContext';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -15,10 +16,50 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
 
+  const [khoaPhong, setKhoaPhong] = useState('');
+
+  const navigate = useNavigate();
+
   const storedSidebarExpanded = localStorage.getItem('sidebar-expanded');
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true',
   );
+
+  // const { khoaPhong } = useContext(UserContext);
+
+  const [decodeWorkerDangNhap] = useState(
+    () => new Worker('decodeWorkerDangNhap.js'),
+  );
+
+  const handleDecodeDangNhap = (encodedString: any) => {
+    return new Promise((resolve, reject) => {
+      if (decodeWorkerDangNhap) {
+        decodeWorkerDangNhap.postMessage(encodedString);
+        decodeWorkerDangNhap.onmessage = function (e) {
+          resolve(e.data);
+        };
+      } else {
+        console.log('Giải mã thông tin đăng nhập không thành công');
+      }
+    });
+  };
+
+  useEffect(() => {
+    try {
+      const kiemTraDaDangNhapHayChua = async () => {
+        let token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/dang-nhap');
+        }
+        let decodeDangNhap: any = await handleDecodeDangNhap(token);
+
+        setKhoaPhong(decodeDangNhap?.khoaphong);
+      };
+      kiemTraDaDangNhapHayChua();
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   // close on click outside
   useEffect(() => {
@@ -176,55 +217,70 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         }`}
                       >
                         <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <NavLink
-                              to="/quan-ly-tieu-chi"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Quản lý tiêu chí
-                            </NavLink>
-                          </li>
-                          {/* <li>
-                            <NavLink
-                              to="/tieu-chi-khoa-phong"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Tiêu chí khoa phòng
-                            </NavLink>
-                          </li> */}
+                          {khoaPhong === 'Phòng Quản Lý chất lượng' ? (
+                            <>
+                              {' '}
+                              <li>
+                                <NavLink
+                                  to="/quan-ly-tieu-chi"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Quản lý tiêu chí
+                                </NavLink>
+                              </li>
+                              <li>
+                                <NavLink
+                                  to="/phan-quyen-tieu-chi"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Phân quyền tiêu chí
+                                </NavLink>
+                              </li>
+                              <li>
+                                <NavLink
+                                  to="/danh-sach-dot-danh-gia-cua-cac-khoa"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Danh sách đợt đánh giá của các khoa
+                                </NavLink>
+                              </li>
+                            </>
+                          ) : (
+                            <>
+                              <li>
+                                <NavLink
+                                  to="/danh-sach-tieu-chi"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Danh sách tiêu chí
+                                </NavLink>
+                              </li>
+                              <li>
+                                <NavLink
+                                  to="/danh-gia-tieu-chi"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Đánh giá tiêu chí
+                                </NavLink>
+                              </li>
+                            </>
+                          )}
                         </ul>
-                        {/* <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <NavLink
-                              to="/chi-tieu-cap-2"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Chỉ tiêu cấp 2
-                            </NavLink>
-                          </li>
-                        </ul>
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <NavLink
-                              to="/chi-tieu-cap-3"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Chỉ tiêu cấp 3
-                            </NavLink>
-                          </li>
-                        </ul> */}
                       </div>
                       {/* <!-- Dropdown Menu End --> */}
                     </React.Fragment>
@@ -362,7 +418,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         </svg>
                       </NavLink> */}
                       {/* <!-- Dropdown Menu Start --> */}
-                      <div
+                      {/* <div
                         className={`translate transform overflow-hidden ${
                           !open && 'hidden'
                         }`}
@@ -391,7 +447,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </NavLink>
                           </li>
                         </ul>
-                      </div>
+                      </div> */}
                       {/* <!-- Dropdown Menu End --> */}
                     </React.Fragment>
                   );

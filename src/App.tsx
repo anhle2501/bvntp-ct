@@ -7,6 +7,11 @@ import SignIn from './pages/Authentication/SignIn';
 import DefaultLayout from './layout/DefaultLayout';
 import ChiTieuCap1 from './pages/ChiTieu/ChiTieuCap1';
 import ChecklistTable from './pages/ChiTieu/ChecklistTable';
+import ChiTieuTheoKhoa from './pages/ChiTieu/ChiTieuTheoKhoa';
+import DanhGiaTieuChiKhoaPhong from './pages/ChiTieu/DanhGiaTieuChiKhoaPhong';
+import DanhSachDanhGiaCuaKhoa from './pages/ChiTieu/DanhSachDanhGiaCuaKhoa';
+import DetailsChiTieu from './pages/ChiTieu/DetailsChiTieu';
+import NotFound from './pages/NotFound/NotFound';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -22,7 +27,7 @@ function App() {
 
   return loading ? (
     <Loader />
-  ) : pathname === '/login' ? (
+  ) : pathname === '/dang-nhap' ? (
     <SignIn />
   ) : (
     <DefaultLayout>
@@ -118,6 +123,24 @@ function App() {
           }
         /> */}
         <Route
+          path="*"
+          element={
+            <>
+              <PageTitle title="404 Not Found" />
+              <NotFound />
+            </>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <>
+              <PageTitle title="Quản lý tiêu chí | NTP" />
+              <ChiTieuCap1 />
+            </>
+          }
+        />
+        <Route
           path="/quan-ly-tieu-chi"
           element={
             <>
@@ -127,11 +150,47 @@ function App() {
           }
         />
         <Route
-          path="/tieu-chi-khoa-phong"
+          path="/phan-quyen-tieu-chi"
           element={
             <>
-              <PageTitle title="Tiêu chí khoa phòng | NTP" />
+              <PageTitle title="Phân quyền tiêu chí | NTP" />
               <ChecklistTable />
+            </>
+          }
+        />
+        <Route
+          path="/danh-sach-tieu-chi"
+          element={
+            <>
+              <PageTitle title="Danh sách tiêu chí | NTP" />
+              <ChiTieuTheoKhoa />
+            </>
+          }
+        />
+        <Route
+          path="/danh-gia-tieu-chi"
+          element={
+            <>
+              <PageTitle title="Đánh giá tiêu chí khoa phòng | NTP" />
+              <DanhGiaTieuChiKhoaPhong />
+            </>
+          }
+        />
+        <Route
+          path="/danh-sach-dot-danh-gia-cua-cac-khoa"
+          element={
+            <>
+              <PageTitle title="Danh sách đợt đánh giá của các khoa | NTP" />
+              <DanhSachDanhGiaCuaKhoa />
+            </>
+          }
+        />
+        <Route
+          path="/chi-tiet-dot-danh-gia/:dotId"
+          element={
+            <>
+              <PageTitle title="Chi tiết đợt đánh giá | NTP" />
+              <DetailsChiTieu />
             </>
           }
         />
