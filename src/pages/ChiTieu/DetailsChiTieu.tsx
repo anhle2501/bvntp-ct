@@ -1,11 +1,10 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './ChiTieuCap1.css';
 import { message, Result } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { DanhMuc } from '../../types/danhmuc';
 import { DanhSachPhanQuyenTieuChi } from '../../api/TieuChiKhoaPhongAPI';
-import { UserContext } from '../../context/UserContext';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { DanhSachDanhGia } from '../../api/ChiTieuAPI';
 
 const DetailsChiTieu: React.FC = () => {
@@ -18,9 +17,107 @@ const DetailsChiTieu: React.FC = () => {
   const [evaluationScores, setEvaluationScores] = useState<
     Record<string, number>
   >({});
+  const [evaluationEvaluators, setEvaluationEvaluators] = useState<
+    Record<string, string>
+  >({});
 
-  const { khoaPhong } = useContext(UserContext);
+  const [fileList, setFileList] = useState<Record<string, any[]>>({});
+
   const { dotId } = useParams();
+  const [status, setStatus] = useState<string>('');
+  const [khoaPhong, setKhoaPhong] = useState('');
+  const [evaluationDescriptions, setEvaluationDescriptions] = useState<
+    Record<string, string>
+  >({});
+
+  const navigate = useNavigate();
+
+  const [decodeWorkerDangNhap] = useState(
+    () => new Worker('/decodeWorkerDangNhap.js'),
+  );
+
+  const handleDecodeDangNhap = (encodedString: any) => {
+    return new Promise((resolve, reject) => {
+      if (decodeWorkerDangNhap) {
+        decodeWorkerDangNhap.postMessage(encodedString);
+        decodeWorkerDangNhap.onmessage = function (e) {
+          resolve(e.data);
+        };
+      } else {
+        console.log('Giải mã thông tin đăng nhập không thành công');
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (dotId) {
+      fetchFileList();
+    }
+  }, [dotId]);
+
+  const fetchFileList = async () => {
+    try {
+      const response = await fetch('http://172.16.0.60:883/api/list_files');
+      const data = await response.json();
+
+      // Filter files by dotId and group by id_tieumuccon
+      const filteredAndGroupedFiles = data
+        .filter((file: any) => file.id_dot_danh_gia === dotId) // Filter files by the current evaluation ID
+        .reduce((acc: any, file: any) => {
+          if (!acc[file.id_tieumuccon]) {
+            acc[file.id_tieumuccon] = [];
+          }
+          acc[file.id_tieumuccon].push(file);
+          return acc;
+        }, {});
+
+      setFileList(filteredAndGroupedFiles);
+    } catch (error) {
+      messageApi.error('Lỗi khi tải danh sách file');
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const kiemTraDaDangNhapHayChua = async () => {
+        let token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/dang-nhap');
+        }
+
+        let decodeDangNhap: any = await handleDecodeDangNhap(token);
+        setKhoaPhong(decodeDangNhap?.khoaphong);
+      };
+      kiemTraDaDangNhapHayChua();
+    } catch (error) {
+      console.log(error);
+      messageApi.open({
+        type: 'error',
+        content: `Đã xảy ra lỗi trong quá trình kiểm tra đăng nhập`,
+      });
+    }
+  }, [khoaPhong]);
+
+  const handleDownload = async (fileId: string, filename: string) => {
+    try {
+      const response = await fetch(
+        `http://172.16.0.60:883/api/download_file/${fileId}`,
+      );
+      const blob = await response.blob();
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      messageApi.error('Lỗi khi tải file');
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -42,13 +139,43 @@ const DetailsChiTieu: React.FC = () => {
         const selectedEvaluation = evaluations.find(
           (e: any) => e._id === dotId,
         );
+
+        if (!selectedEvaluation) {
+          messageApi.error('Không tìm thấy dữ liệu đánh giá');
+          return;
+        }
+
         setEvaluationData(selectedEvaluation);
 
         // Khởi tạo evaluationScores từ dữ liệu đánh giá
         const scores: Record<string, number> = {};
+        const descriptions: Record<string, string> = {};
+        const evaluators: Record<string, string> = {}; // Add this for evaluators
+
         selectedEvaluation?.danh_sach_danh_gia?.forEach((tieuChi: any) => {
           tieuChi.tieu_muc.forEach((tieuMuc: any) => {
             scores[tieuMuc.id_tieumuc] = tieuMuc.danh_gia;
+
+            if (tieuMuc.mota_danhgia) {
+              const motaEntries = tieuMuc.mota_danhgia.split(',');
+              motaEntries.forEach((entry: string) => {
+                const [id, mota] = entry.split(':');
+                if (id && mota && mota !== 'none') {
+                  descriptions[id] = mota;
+                }
+              });
+            }
+
+            if (tieuMuc.cac_tieu_muc_con) {
+              tieuMuc.cac_tieu_muc_con.forEach((tmc: any) => {
+                scores[tmc.id_tieumuccon] = tmc.danh_gia;
+                // Store the evaluator information if available
+                if (tmc.nguoi_danhgia) {
+                  evaluators[tmc.id_tieumuccon] = tmc.nguoi_danhgia;
+                }
+              });
+            }
+
             if (tieuMuc.cac_tieu_muc_con) {
               tieuMuc.cac_tieu_muc_con.forEach((tmc: any) => {
                 scores[tmc.id_tieumuccon] = tmc.danh_gia;
@@ -57,14 +184,20 @@ const DetailsChiTieu: React.FC = () => {
           });
         });
         setEvaluationScores(scores);
+        setEvaluationDescriptions(descriptions);
+        setEvaluationEvaluators(evaluators); // Set the evaluators state
 
-        // Fetch criteria list
         let data = await DanhSachPhanQuyenTieuChi();
         if (data) {
-          let tieuchicuakhoa = data.find(
-            (tieuchitheokhoa: any) =>
-              tieuchitheokhoa.ten_khoa === selectedEvaluation?.ten_khoa,
-          );
+          // Tìm trong mảng phan_quyen của từng phần tử
+          let tieuchicuakhoa = data
+            .flatMap((item: any) =>
+              item.phan_quyen.find(
+                (phanquyen: any) =>
+                  phanquyen.ten_khoa === selectedEvaluation?.ten_khoa,
+              ),
+            )
+            .find(Boolean); // lấy phần tử đầu tiên khác null/undefined
 
           if (
             tieuchicuakhoa &&
@@ -73,6 +206,7 @@ const DetailsChiTieu: React.FC = () => {
             setDanhSachTieuChiTheoKhoa(tieuchicuakhoa.danh_sach_tieu_chi);
           }
         }
+
         setLoadingDanhMuc(false);
       } catch (error) {
         console.log(error);
@@ -83,20 +217,28 @@ const DetailsChiTieu: React.FC = () => {
     if (dotId) {
       fetchData();
     }
-  }, [dotId]);
+  }, [dotId, messageApi]);
 
   return (
     <>
       {contextHolder}
       {khoaPhong === 'Phòng Quản Lý chất lượng' ? (
         <>
-          <div className="container">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             {evaluationData && (
               <div className="mb-4">
-                <h2 className="text-xl font-bold">Thông tin đợt đánh giá</h2>
+                <h2 className="text-lg md:text-xl lg:text-2xl font-bold">
+                  Thông tin đợt đánh giá
+                </h2>
                 <p>Khoa/Phòng: {evaluationData.ten_khoa}</p>
-                <p>Thời gian: {formatDate(evaluationData.ngay_gio_danh_gia)}</p>
-                <p>Người đánh giá: {evaluationData.nhan_vien}</p>
+                <p>
+                  Thời gian:{' '}
+                  {formatDate(evaluationData.nhan_vien.split('-')[1]?.trim())}
+                </p>
+                {/* <p>
+                  Người đánh giá:{' '}
+                  {evaluationData.nhan_vien.split('-')[0]?.trim()}
+                </p> */}
               </div>
             )}
 
@@ -120,17 +262,17 @@ const DetailsChiTieu: React.FC = () => {
                               className="level"
                               id={`level-1-${level1Id}`}
                             >
-                              <h3 className="text-danger font-bold">
+                              <h3 className="text-danger font-bold text-base md:text-lg">
                                 Tiêu chí - {level1Id}
                               </h3>
 
-                              <div className="input-group">
+                              <div className="input-group flex flex-col md:flex-row gap-2 md:gap-4">
                                 <input
                                   type="text"
                                   placeholder="Số"
                                   value={level1Id}
                                   readOnly
-                                  style={{ width: '8%' }}
+                                  className="h-10 w-full md:w-[8%]"
                                 />
 
                                 <input
@@ -138,24 +280,24 @@ const DetailsChiTieu: React.FC = () => {
                                   placeholder="Tên Tiêu chí"
                                   id={`ten-tieuchi-cap1-${level1Id}`}
                                   defaultValue={existingData?.ten_tieuchi || ''}
-                                  style={{ width: '10%' }}
+                                  className="h-10 w-full md:w-[10%]"
                                   readOnly
                                 />
                                 <textarea
                                   id={`noidung-tieuchi-cap1-${level1Id}`}
-                                  className=""
+                                  className="w-full md:w-[70%] border rounded"
                                   defaultValue={existingData?.mo_ta || ''}
                                   rows={2}
-                                  style={{
-                                    width: '70%',
-                                    // resize: 'none',
-                                    overflow: 'hidden',
-                                    verticalAlign: 'middle',
-                                    padding: '0 10px',
-                                    lineHeight: '2.8',
-                                    border: '1px solid #ced4da',
-                                    borderRadius: '0.25rem',
-                                  }}
+                                  // style={{
+                                  //   width: '70%',
+                                  //   // resize: 'none',
+                                  //   overflow: 'hidden',
+                                  //   verticalAlign: 'middle',
+                                  //   padding: '0 10px',
+                                  //   lineHeight: '2.8',
+                                  //   border: '1px solid #ced4da',
+                                  //   borderRadius: '0.25rem',
+                                  // }}
                                   placeholder="Nội dung Tiêu chí"
                                   readOnly
                                 ></textarea>
@@ -183,17 +325,17 @@ const DetailsChiTieu: React.FC = () => {
                                           className="level"
                                           id={`level-2-${level1Id}-${level2Id}`}
                                         >
-                                          <h3 className="text-primary font-bold">
+                                          <h3 className="text-primary font-bold text-base md:text-lg">
                                             Tiểu mục - {item?.so_tieu_muc}
                                           </h3>
 
-                                          <div className="input-group">
+                                          <div className="input-group flex flex-col md:flex-row gap-2 md:gap-4">
                                             <input
                                               type="text"
                                               placeholder="Số"
                                               value={`${item?.so_tieu_muc}`}
                                               readOnly
-                                              style={{ width: '8%' }}
+                                              className="h-10 w-full md:w-[8%]"
                                             />
                                             <input
                                               type="text"
@@ -202,27 +344,27 @@ const DetailsChiTieu: React.FC = () => {
                                                 item?.ten_tieu_muc || ''
                                               }
                                               id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                              style={{ width: '10%' }}
+                                              className="h-10 w-full md:w-[10%]"
                                               readOnly
                                             />
 
                                             <textarea
                                               id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                              className=""
+                                              className="w-full md:w-[70%] border rounded"
                                               defaultValue={
                                                 item?.mo_ta_tieu_muc || ''
                                               }
                                               rows={2}
-                                              style={{
-                                                width: '70%',
-                                                // resize: 'none',
-                                                overflow: 'hidden',
-                                                verticalAlign: 'middle',
-                                                padding: '0 10px',
-                                                lineHeight: '2.8',
-                                                border: '1px solid #ced4da',
-                                                borderRadius: '0.25rem',
-                                              }}
+                                              // style={{
+                                              //   width: '70%',
+                                              //   // resize: 'none',
+                                              //   overflow: 'hidden',
+                                              //   verticalAlign: 'middle',
+                                              //   padding: '0 10px',
+                                              //   lineHeight: '2.8',
+                                              //   border: '1px solid #ced4da',
+                                              //   borderRadius: '0.25rem',
+                                              // }}
                                               placeholder="Nội dung Tiểu mục"
                                               readOnly
                                             ></textarea>
@@ -249,13 +391,13 @@ const DetailsChiTieu: React.FC = () => {
                                                     className="level"
                                                     id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
                                                   >
-                                                    <h3 className="text-success font-bold">
+                                                    <h3 className="text-success font-bold text-base md:text-lg">
                                                       Tiểu mục con -{' '}
                                                       {item?.so_tieu_muc_con}
                                                     </h3>
 
                                                     <div
-                                                      className="input-group"
+                                                      className="input-group flex flex-col md:flex-row gap-2 md:gap-4"
                                                       key={
                                                         item?.so_tieu_muc_con
                                                       }
@@ -265,27 +407,26 @@ const DetailsChiTieu: React.FC = () => {
                                                         placeholder="Số"
                                                         value={`${item?.so_tieu_muc_con}`}
                                                         readOnly
-                                                        style={{ width: '8%' }}
+                                                        className="h-10 w-full md:w-[8%]"
                                                       />
                                                       <input
                                                         type="text"
                                                         placeholder="Tên Tiểu mục con"
                                                         id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                        style={{ width: '10%' }}
                                                         defaultValue={
                                                           item?.ten_tieu_muc_con
                                                             ? item?.ten_tieu_muc_con
                                                             : ''
                                                         }
+                                                        className="h-10 w-full md:w-[10%]"
                                                         readOnly
                                                       />
                                                       <input
-                                                        className="mr-1 w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-5 text-black active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                                                        className="h-10 w-full md:w-[10%] border rounded"
                                                         type="number"
                                                         min={1}
                                                         placeholder="Mức"
                                                         id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                        style={{ width: '10%' }}
                                                         defaultValue={
                                                           item?.muc
                                                             ? item?.muc
@@ -301,30 +442,31 @@ const DetailsChiTieu: React.FC = () => {
                                                       />
                                                       <textarea
                                                         id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                        className=""
+                                                        className="w-full md:w-[70%] border rounded"
                                                         defaultValue={
                                                           item?.mo_ta_tieu_muc_con
                                                             ? item?.mo_ta_tieu_muc_con
                                                             : ''
                                                         }
                                                         rows={2}
-                                                        style={{
-                                                          width: '55%',
-                                                          // resize: 'none',
-                                                          overflow: 'hidden',
-                                                          verticalAlign:
-                                                            'middle',
-                                                          padding: '10px 10px',
-                                                          lineHeight: '1.5',
-                                                          border:
-                                                            '1px solid #ced4da',
-                                                          borderRadius:
-                                                            '0.25rem',
-                                                        }}
+                                                        // style={{
+                                                        //   width: '55%',
+                                                        //   // resize: 'none',
+                                                        //   overflow: 'hidden',
+                                                        //   verticalAlign:
+                                                        //     'middle',
+                                                        //   padding: '10px 10px',
+                                                        //   lineHeight: '1.5',
+                                                        //   border:
+                                                        //     '1px solid #ced4da',
+                                                        //   borderRadius:
+                                                        //     '0.25rem',
+                                                        // }}
                                                         placeholder="Nội dung Tiểu mục con"
                                                         readOnly
                                                       ></textarea>
-                                                      <div className="ml-2">
+
+                                                      <div className="h-10 mt-2 md:mt-0 md:ml-2 flex flex-col md:flex-row items-start md:items-center">
                                                         <span className="font-bold mr-2">
                                                           Đánh giá:
                                                         </span>
@@ -344,6 +486,104 @@ const DetailsChiTieu: React.FC = () => {
                                                             : 'Không đạt'}
                                                         </span>
                                                       </div>
+                                                    </div>
+                                                    <div className="mt-4">
+                                                      {evaluationDescriptions[
+                                                        item?.id_tieumuccon
+                                                      ] ? (
+                                                        <div className="mb-4">
+                                                          <h4 className="font-bold mb-2">
+                                                            Ghi chú đánh giá:
+                                                          </h4>
+                                                          <div className="bg-gray-100 rounded">
+                                                            {
+                                                              evaluationDescriptions[
+                                                                item?.id_tieumuccon
+                                                              ]
+                                                            }
+                                                          </div>
+                                                        </div>
+                                                      ) : (
+                                                        <div className="mb-4">
+                                                          <h4 className="font-bold mb-2">
+                                                            Ghi chú đánh giá:
+                                                          </h4>
+                                                          <div className="bg-gray-100 rounded">
+                                                            Không có ghi chú
+                                                          </div>
+                                                        </div>
+                                                      )}
+
+                                                      {/* <div className="mt-2">
+                                                        {evaluationEvaluators[
+                                                          item?.id_tieumuccon
+                                                        ] ? (
+                                                          <div className="flex items-center">
+                                                            <span className="font-bold mr-2">
+                                                              Người đánh giá:
+                                                            </span>
+                                                            <span>
+                                                              {
+                                                                evaluationEvaluators[
+                                                                  item?.id_tieumuccon
+                                                                ]
+                                                              }
+                                                            </span>
+                                                          </div>
+                                                        ) : (
+                                                          <>
+                                                            <h4 className="font-bold mr-2">
+                                                              Người đánh giá:
+                                                            </h4>
+                                                            <span>
+                                                              Không có thông tin
+                                                            </span>
+                                                          </>
+                                                        )}
+                                                      </div> */}
+
+                                                      {fileList[
+                                                        item?.id_tieumuccon
+                                                      ]?.length > 0 && (
+                                                        <>
+                                                          <h4 className="font-bold mb-2">
+                                                            Danh sách file đính
+                                                            kèm:
+                                                          </h4>
+                                                          <div className="space-y-2">
+                                                            {fileList[
+                                                              item?.id_tieumuccon
+                                                            ].map(
+                                                              (file: any) => (
+                                                                <div
+                                                                  key={
+                                                                    file.file_id
+                                                                  }
+                                                                  className="flex items-center gap-4"
+                                                                >
+                                                                  <span>
+                                                                    {
+                                                                      file.filename
+                                                                    }
+                                                                  </span>
+                                                                  <button
+                                                                    onClick={() =>
+                                                                      handleDownload(
+                                                                        file.file_id,
+                                                                        file.filename,
+                                                                      )
+                                                                    }
+                                                                    className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/80"
+                                                                  >
+                                                                    <DownloadOutlined />{' '}
+                                                                    Tải về
+                                                                  </button>
+                                                                </div>
+                                                              ),
+                                                            )}
+                                                          </div>
+                                                        </>
+                                                      )}
                                                     </div>
                                                   </div>
                                                 );

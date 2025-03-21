@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
@@ -12,10 +12,34 @@ import DanhGiaTieuChiKhoaPhong from './pages/ChiTieu/DanhGiaTieuChiKhoaPhong';
 import DanhSachDanhGiaCuaKhoa from './pages/ChiTieu/DanhSachDanhGiaCuaKhoa';
 import DetailsChiTieu from './pages/ChiTieu/DetailsChiTieu';
 import NotFound from './pages/NotFound/NotFound';
+import { message } from 'antd';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const { pathname } = useLocation();
+
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const [khoaPhong, setKhoaPhong] = useState('');
+
+  const navigate = useNavigate();
+
+  const [decodeWorkerDangNhap] = useState(
+    () => new Worker('./decodeWorkerDangNhap.js'),
+  );
+
+  const handleDecodeDangNhap = (encodedString: any) => {
+    return new Promise((resolve, reject) => {
+      if (decodeWorkerDangNhap) {
+        decodeWorkerDangNhap.postMessage(encodedString);
+        decodeWorkerDangNhap.onmessage = function (e) {
+          resolve(e.data);
+        };
+      } else {
+        console.log('Giải mã thông tin đăng nhập không thành công');
+      }
+    });
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -23,6 +47,27 @@ function App() {
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const kiemTraDaDangNhaphayChua = async () => {
+        let token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/dang-nhap');
+        }
+        let decodeDangNhap: any = await handleDecodeDangNhap(token);
+        setKhoaPhong(decodeDangNhap?.khoaphong);
+      };
+      kiemTraDaDangNhaphayChua();
+    } catch (error) {
+      console.log(error);
+
+      messageApi.open({
+        type: 'error',
+        content: `Đã xảy ra lỗi trong quá trình kiểm tra đăng nhập`,
+      });
+    }
   }, []);
 
   return loading ? (
@@ -135,8 +180,17 @@ function App() {
           path="/"
           element={
             <>
-              <PageTitle title="Quản lý tiêu chí | NTP" />
-              <ChiTieuCap1 />
+              {khoaPhong === 'Phòng Quản Lý chất lượng' ? (
+                <>
+                  <PageTitle title="Quản lý tiêu chí | NTP" />
+                  <ChiTieuCap1 />
+                </>
+              ) : (
+                <>
+                  <PageTitle title="Danh sách tiêu chí | NTP" />
+                  <ChiTieuTheoKhoa />
+                </>
+              )}
             </>
           }
         />

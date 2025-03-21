@@ -1,0 +1,1586 @@
+[
+  {
+    "_id": "678493e5f5fe070de3f4d967",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_danhgia_tieumuc": "678493e5f5fe070de3f4d961",
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 1,
+            "id_danhgia_tieumuc": "678493e5f5fe070de3f4d962",
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 1,
+            "id_danhgia_tieumuc": "678493e5f5fe070de3f4d963",
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 1,
+            "id_danhgia_tieumuc": "678493e5f5fe070de3f4d964",
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "951d2dd9-d6c1-45a2-8178-57481b4cb854",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_danhgia_tieumuc": "678493e5f5fe070de3f4d965",
+            "id_tieumuc": "f69fee09-152f-4a14-9e1b-e33cb94ca070",
+            "danh_gia_tieu_muc_con": "00559603-46d7-4474-ade5-0b7eeef7fb80:1,3c37f8bc-f1e7-4e4b-a000-f3cfa6c4f0ba:0,b72e1cb7-e6f9-4952-a43d-ad4217b0986a:0,ad5b2b97-0374-4fd8-bcbd-d15da1d443cc:0,8bdb40ae-cc74-4521-bc37-b8e06cdecf95:0,61913dcb-26df-406d-9b47-4d283b408309:0,c0bba603-1c3b-4e2b-a8d8-bbadf3a6a524:0,823b61b8-7d24-49bc-9f8c-cb74adebd454:0,58c78e09-8bac-4aaa-a4bd-d4ddfcf080b5:0,d4f65fd7-921e-4d6c-9df6-517611af275a:0,bac2c2a3-8d77-40a9-98ca-09028c3ba613:0,2f07ee17-4e8a-4963-9646-06863bd0a2f8:0,965c855e-f136-48f7-ab47-519d3afd4f79:0,6395fc4c-f7e8-49d4-8c57-39be7c2f1a51:0,c5056d4e-a5b1-4130-8869-b5560b5f7347:0"
+          },
+          {
+            "danh_gia": 0,
+            "id_danhgia_tieumuc": "678493e5f5fe070de3f4d966",
+            "id_tieumuc": "ad940142-4beb-4614-b3e2-07c71f1154a8",
+            "danh_gia_tieu_muc_con": "3f10bed8-8511-4d04-99fa-411a35195b91:0,879a708a-6783-486f-90bb-25d904056c01:0,0c8f9945-501e-4b4f-b894-62f162e81ead:0,b86a6043-88e2-4e66-8569-b8fb8c7006c4:0,200e7aff-82cb-4a9b-b079-46f93d3c7250:0,bba1250a-5e51-4577-a39d-d74043235568:0,ef58396c-fb51-46fd-b511-9b9e71ec422d:0,93e8d89b-3e97-4ef1-ada8-2db3cd1f00a2:0,b23f1019-ae9b-41a6-9120-844ed8423b16:0,29b628c6-66a1-4ef1-8439-67f5c4604ef3:0,baa4941d-dd56-479e-90c2-e1bd7ff41c0c:0,a98c52f5-3ce0-492f-966f-8e9fe0a1e7d0:0,27a40e8d-02f1-418c-8df6-99755e3ce377:0,1935c0b2-6081-4185-adda-f3568fd7a7ff:0,325ec3f8-f02c-46ce-8731-58d136dca0a3:0,58f91823-d276-4225-911b-b27db55135fc:0,8ce678cc-cc06-4238-90ad-1ee098da7107:0"
+          }
+        ]
+      }
+    ],
+    "giay": 41,
+    "gio": 4,
+    "nam": 2025,
+    "ngay": 13,
+    "ngay_gio_danh_gia": "Mon, 13 Jan 2025 04:17:41 GMT",
+    "nhan_vien": "Phạm Hồng Phong",
+    "phut": 17,
+    "quy": 1,
+    "stt": 1,
+    "ten_khoa": "Phòng Tổ Chức",
+    "thang": 1
+  },
+  {
+    "_id": "67847ea83bee2ac713127afb",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "951d2dd9-d6c1-45a2-8178-57481b4cb854",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "f69fee09-152f-4a14-9e1b-e33cb94ca070"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "ad940142-4beb-4614-b3e2-07c71f1154a8"
+          }
+        ]
+      }
+    ],
+    "giay": 4,
+    "gio": 2,
+    "nam": 2025,
+    "ngay": 13,
+    "ngay_gio_danh_gia": "Mon, 13 Jan 2025 02:47:04 GMT",
+    "nhan_vien": "Phạm Hồng Phong",
+    "phut": 47,
+    "quy": 1,
+    "stt": 2,
+    "ten_khoa": "Phòng Tổ Chức",
+    "thang": 1
+  },
+  {
+    "_id": "67847e893bee2ac713127afa",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "951d2dd9-d6c1-45a2-8178-57481b4cb854",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "f69fee09-152f-4a14-9e1b-e33cb94ca070"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "ad940142-4beb-4614-b3e2-07c71f1154a8"
+          }
+        ]
+      }
+    ],
+    "giay": 33,
+    "gio": 2,
+    "nam": 2025,
+    "ngay": 13,
+    "ngay_gio_danh_gia": "Mon, 13 Jan 2025 02:46:33 GMT",
+    "nhan_vien": "Phạm Hồng Phong",
+    "phut": 46,
+    "quy": 1,
+    "stt": 3,
+    "ten_khoa": "Phòng Tổ Chức",
+    "thang": 1
+  },
+  {
+    "_id": "675bd5fa96a30f84a72ebacc",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 42,
+    "gio": 6,
+    "nam": 2024,
+    "ngay": 13,
+    "ngay_gio_danh_gia": "Fri, 13 Dec 2024 06:36:42 GMT",
+    "nhan_vien": "Phạm Hồng Phong",
+    "phut": 36,
+    "quy": 4,
+    "stt": 4,
+    "ten_khoa": "Phòng Tổ Chức",
+    "thang": 12
+  },
+  {
+    "_id": "675a9c0c96a30f84a72ebacb",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 16,
+    "gio": 8,
+    "nam": 2024,
+    "ngay": 12,
+    "ngay_gio_danh_gia": "Thu, 12 Dec 2024 08:17:16 GMT",
+    "nhan_vien": "Phạm Hồng Phong",
+    "phut": 17,
+    "quy": 4,
+    "stt": 5,
+    "ten_khoa": "Phòng Tổ Chức",
+    "thang": 12
+  },
+  {
+    "_id": "675655da96a30f84a72ebaca",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 42,
+    "gio": 2,
+    "nam": 2024,
+    "ngay": 9,
+    "ngay_gio_danh_gia": "Mon, 09 Dec 2024 02:28:42 GMT",
+    "nhan_vien": "Phạm Hồng Phong",
+    "phut": 28,
+    "quy": 4,
+    "stt": 6,
+    "ten_khoa": "Phòng Tổ Chức",
+    "thang": 12
+  },
+  {
+    "_id": "674d31af96a30f84a72ebac9",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 59,
+    "gio": 4,
+    "nam": 2024,
+    "ngay": 2,
+    "ngay_gio_danh_gia": "Mon, 02 Dec 2024 04:03:59 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 3,
+    "quy": 4,
+    "stt": 7,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 12
+  },
+  {
+    "_id": "674d312a96a30f84a72ebac8",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 46,
+    "gio": 4,
+    "nam": 2024,
+    "ngay": 2,
+    "ngay_gio_danh_gia": "Mon, 02 Dec 2024 04:01:46 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 1,
+    "quy": 4,
+    "stt": 8,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 12
+  },
+  {
+    "_id": "67452f7b0bddc088af5a8589",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 27,
+    "gio": 2,
+    "nam": 2024,
+    "ngay": 26,
+    "ngay_gio_danh_gia": "Tue, 26 Nov 2024 02:16:27 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 16,
+    "quy": 4,
+    "stt": 9,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "67452df80bddc088af5a8588",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 0,
+    "gio": 2,
+    "nam": 2024,
+    "ngay": 26,
+    "ngay_gio_danh_gia": "Tue, 26 Nov 2024 02:10:00 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 10,
+    "quy": 4,
+    "stt": 10,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "67452c400bddc088af5a8587",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 40,
+    "gio": 2,
+    "nam": 2024,
+    "ngay": 26,
+    "ngay_gio_danh_gia": "Tue, 26 Nov 2024 02:02:40 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 2,
+    "quy": 4,
+    "stt": 11,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "67442ce20bddc088af5a8586",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 6,
+    "gio": 7,
+    "nam": 2024,
+    "ngay": 25,
+    "ngay_gio_danh_gia": "Mon, 25 Nov 2024 07:53:06 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 53,
+    "quy": 4,
+    "stt": 12,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "67442ccd0bddc088af5a8585",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 45,
+    "gio": 7,
+    "nam": 2024,
+    "ngay": 25,
+    "ngay_gio_danh_gia": "Mon, 25 Nov 2024 07:52:45 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 52,
+    "quy": 4,
+    "stt": 13,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "6744281a0bddc088af5a8584",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 42,
+    "gio": 7,
+    "nam": 2024,
+    "ngay": 25,
+    "ngay_gio_danh_gia": "Mon, 25 Nov 2024 07:32:42 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 32,
+    "quy": 4,
+    "stt": 14,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "674427e90bddc088af5a8583",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 53,
+    "gio": 7,
+    "nam": 2024,
+    "ngay": 25,
+    "ngay_gio_danh_gia": "Mon, 25 Nov 2024 07:31:53 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 31,
+    "quy": 4,
+    "stt": 15,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "674427ba0bddc088af5a8582",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 6,
+    "gio": 7,
+    "nam": 2024,
+    "ngay": 25,
+    "ngay_gio_danh_gia": "Mon, 25 Nov 2024 07:31:06 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 31,
+    "quy": 4,
+    "stt": 16,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673d4fca0bddc088af5a8581",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 10,
+    "gio": 2,
+    "nam": 2024,
+    "ngay": 20,
+    "ngay_gio_danh_gia": "Wed, 20 Nov 2024 02:56:10 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 56,
+    "quy": 4,
+    "stt": 17,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673d3af40bddc088af5a8580",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 16,
+    "gio": 1,
+    "nam": 2024,
+    "ngay": 20,
+    "ngay_gio_danh_gia": "Wed, 20 Nov 2024 01:27:16 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 27,
+    "quy": 4,
+    "stt": 18,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673c4a9e0bddc088af5a857f",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 50,
+    "gio": 8,
+    "nam": 2024,
+    "ngay": 19,
+    "ngay_gio_danh_gia": "Tue, 19 Nov 2024 08:21:50 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 21,
+    "quy": 4,
+    "stt": 19,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673c0bdc0bddc088af5a857e",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 4,
+    "gio": 3,
+    "nam": 2024,
+    "ngay": 19,
+    "ngay_gio_danh_gia": "Tue, 19 Nov 2024 03:54:04 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 54,
+    "quy": 4,
+    "stt": 20,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673be26c0bddc088af5a857d",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 16,
+    "gio": 0,
+    "nam": 2024,
+    "ngay": 19,
+    "ngay_gio_danh_gia": "Tue, 19 Nov 2024 00:57:16 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 57,
+    "quy": 4,
+    "stt": 21,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673bdcfd0bddc088af5a857c",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 5,
+    "gio": 0,
+    "nam": 2024,
+    "ngay": 19,
+    "ngay_gio_danh_gia": "Tue, 19 Nov 2024 00:34:05 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 34,
+    "quy": 4,
+    "stt": 22,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673bdcd00bddc088af5a857b",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 20,
+    "gio": 0,
+    "nam": 2024,
+    "ngay": 19,
+    "ngay_gio_danh_gia": "Tue, 19 Nov 2024 00:33:20 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 33,
+    "quy": 4,
+    "stt": 23,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673bdcaf0bddc088af5a857a",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 47,
+    "gio": 0,
+    "nam": 2024,
+    "ngay": 19,
+    "ngay_gio_danh_gia": "Tue, 19 Nov 2024 00:32:47 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 32,
+    "quy": 4,
+    "stt": 24,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673b11680bddc088af5a8579",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 28,
+    "gio": 10,
+    "nam": 2024,
+    "ngay": 18,
+    "ngay_gio_danh_gia": "Mon, 18 Nov 2024 10:05:28 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 5,
+    "quy": 4,
+    "stt": 25,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673b10e40bddc088af5a8578",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 16,
+    "gio": 10,
+    "nam": 2024,
+    "ngay": 18,
+    "ngay_gio_danh_gia": "Mon, 18 Nov 2024 10:03:16 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 3,
+    "quy": 4,
+    "stt": 26,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "673b0e850bddc088af5a8577",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "e8cdc2b6-7e8d-43c0-be2f-a9cc1d9e573c",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "33f38c7e-054a-4489-b8d1-26f85c59a7db"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "08117d34-fc72-4d62-87e3-d9ca0cc82e83"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c58a654e-e833-447c-b156-40ceb9f7e02e"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "6f5b309c-ad2f-4a22-9569-fe741a20175d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07a26d02-d839-44bc-85b2-b7e4cb59c6a5"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "67b1ccb3-6b7b-4d86-a38a-5c39a0df181f"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "a869165e-3fa1-4906-b75e-babf6aad154a"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "0f543708-c259-4d79-992e-e0e809b5e509",
+        "tieu_muc": [
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "029c0020-d4b1-4fda-a8d9-63cabeeac44d"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "aee03d53-fb60-40d1-8b46-39ad475ac925"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "07b51fe4-55ff-4eac-8d23-8255e7ceea67"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "c1632ab1-8dd3-4993-b722-e7ceac9c1287"
+          }
+        ]
+      }
+    ],
+    "giay": 9,
+    "gio": 9,
+    "nam": 2024,
+    "ngay": 18,
+    "ngay_gio_danh_gia": "Mon, 18 Nov 2024 09:53:09 GMT",
+    "nhan_vien": "Hà Nhật Minh Trường",
+    "phut": 53,
+    "quy": 4,
+    "stt": 27,
+    "ten_khoa": "Phòng Công Nghệ Thông Tin",
+    "thang": 11
+  },
+  {
+    "_id": "672845a8ac61fdb93263f877",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "6532fc8c22f9b68",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "5626f5263a1a47cabc730cf"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "3c4240956063ae1cf523c6"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "653272c125",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "ffe98e487b3949dd38257"
+          }
+        ]
+      }
+    ],
+    "giay": 20,
+    "gio": 3,
+    "nam": 2024,
+    "ngay": 4,
+    "ngay_gio_danh_gia": "Mon, 04 Nov 2024 03:55:20 GMT",
+    "nhan_vien": "Nguyễn Văn A",
+    "phut": 55,
+    "quy": 4,
+    "stt": 28,
+    "ten_khoa": "Khoa A",
+    "thang": 11
+  },
+  {
+    "_id": "6728450dac61fdb93263f876",
+    "danh_sach_danh_gia": [
+      {
+        "id_tieuchi": "6532fc8c22f9b68",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "5626f5263a1a47cabc730cf"
+          },
+          {
+            "danh_gia": 0,
+            "id_tieumuc": "3c4240956063ae1cf523c6"
+          }
+        ]
+      },
+      {
+        "id_tieuchi": "653272c125",
+        "tieu_muc": [
+          {
+            "danh_gia": 1,
+            "id_tieumuc": "ffe98e487b3949dd38257"
+          }
+        ]
+      }
+    ],
+    "giay": 45,
+    "gio": 3,
+    "nam": 2024,
+    "ngay": 4,
+    "ngay_gio_danh_gia": "Mon, 04 Nov 2024 03:52:45 GMT",
+    "nhan_vien": "Nguyễn Văn A",
+    "phut": 52,
+    "quy": 4,
+    "stt": 29,
+    "ten_khoa": "Khoa A",
+    "thang": 11
+  }
+]

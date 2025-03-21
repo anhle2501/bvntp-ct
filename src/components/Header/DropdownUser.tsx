@@ -1,17 +1,38 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
-import UserOne from '../../images/user/user-05.png';
+import UserOne from '../../images/user/images.jpg';
+import { message } from 'antd';
 
 interface HeaderProps {
   tennhanvien: string;
   khoaphong: string;
 }
 
-const DropdownUser = ({ tennhanvien, khoaphong }: HeaderProps) => {
+// const DropdownUser = ({ tennhanvien, khoaphong }: HeaderProps) => {
+const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
+  const [messageApi, contextHolder] = message.useMessage();
+  const [khoaPhong, setKhoaPhong] = useState('');
+  const [nhanVien, setNhanVien] = useState('');
   const navigate = useNavigate();
+
+  const [decodeWorkerDangNhap] = useState(
+    () => new Worker('../decodeWorkerDangNhap.js'),
+  );
+
+  const handleDecodeDangNhap = (encodedString: any) => {
+    return new Promise((resolve, reject) => {
+      if (decodeWorkerDangNhap) {
+        decodeWorkerDangNhap.postMessage(encodedString);
+        decodeWorkerDangNhap.onmessage = function (e) {
+          resolve(e.data);
+        };
+      } else {
+        console.log('Giải mã thông tin đăng nhập không thành công');
+      }
+    });
+  };
 
   const toggleDropdown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,6 +57,28 @@ const DropdownUser = ({ tennhanvien, khoaphong }: HeaderProps) => {
     navigate('/dang-nhap');
   };
 
+  useEffect(() => {
+    try {
+      const kiemTraDaDangNhaphayChua = async () => {
+        let token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/dang-nhap');
+        }
+        let decodeDangNhap: any = await handleDecodeDangNhap(token);
+        setKhoaPhong(decodeDangNhap?.khoaphong);
+        setNhanVien(decodeDangNhap?.tennhanvien);
+      };
+      kiemTraDaDangNhaphayChua();
+    } catch (error) {
+      console.log(error);
+
+      messageApi.open({
+        type: 'error',
+        content: `Đã xảy ra lỗi trong quá trình kiểm tra đăng nhập`,
+      });
+    }
+  }, []);
+
   return (
     <>
       <div className="relative dropdown-container">
@@ -43,15 +86,15 @@ const DropdownUser = ({ tennhanvien, khoaphong }: HeaderProps) => {
           onClick={toggleDropdown}
           className="flex items-center gap-4 hover:bg-transparent focus:bg-transparent"
         >
-          <span className="hidden text-right lg:block">
+          <span className="text-right lg:block">
             <span className="block text-sm font-medium text-black dark:text-white">
-              {tennhanvien}
+              {nhanVien}
             </span>
-            <span className="block text-xs">{khoaphong}</span>
+            <span className="block text-xs">{khoaPhong}</span>
           </span>
 
-          <span className="h-12 w-12 rounded-full">
-            <img src={UserOne} alt="User" />
+          <span className="h-12 w-12 rounded-full ">
+            <img src={UserOne} alt="User" className="rounded-full" />
           </span>
 
           <svg
@@ -94,7 +137,7 @@ const DropdownUser = ({ tennhanvien, khoaphong }: HeaderProps) => {
                   fill=""
                 />
               </svg>
-              Log Out
+              Đăng xuất
             </button>
           </div>
         )}

@@ -11,6 +11,13 @@ import { message } from 'antd';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import CryptoJS from 'crypto-js';
 
+interface NhanVien {
+  HOTEN: string;
+  TENGOIKHOAPHONG: string;
+  MATKHAU: string;
+  // Thêm các trường khác nếu cần
+}
+
 const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [tenNhanVien, setTenNhanVien] = useState<any>(null);
@@ -24,6 +31,9 @@ const SignIn: React.FC = () => {
   const [dataNhanVienToanVien, setDataNhanVienToanVien] = useState([]);
   const [dataKhoaPhong, setDataKhoaPhong] = useState([]);
   const [layThongTin, setLayThongTin] = useState<any>(null);
+  const [countdown, setCountdown] = useState<number>(3);
+  const [filteredNhanVien, setFilteredNhanVien] = useState<any[]>([]);
+
   const [messageApi, contextHolder] = message.useMessage();
 
   const navigate = useNavigate();
@@ -118,8 +128,44 @@ const SignIn: React.FC = () => {
     fetchKhoaPhong();
   }, []);
 
+  // Sửa hàm xử lý khi chọn khoa phòng
+  const handleKhoaPhongChange = (selectedOption: any) => {
+    setKhoaPhong(selectedOption);
+    setErrors({ ...errors, khoaPhong: '' });
+
+    // Lọc danh sách nhân viên theo khoa phòng đã chọn
+    if (selectedOption) {
+      const filteredStaff = dataNhanVienToanVien.filter(
+        (nhanVien: any) => nhanVien.TENGOIKHOAPHONG === selectedOption.value,
+      );
+      setFilteredNhanVien(filteredStaff);
+      // Reset lựa chọn nhân viên khi thay đổi khoa phòng
+      setTenNhanVien(null);
+    } else {
+      setFilteredNhanVien([]);
+    }
+  };
+
+  const handleNhanVienChange = (selectedOption: any) => {
+    setTenNhanVien(selectedOption);
+    setErrors({ ...errors, tenNhanVien: '' });
+  };
+
   useEffect(() => {
+    let timer: NodeJS.Timeout;
+
     if (layThongTin !== null) {
+      // Bắt đầu đếm ngược từ 2 giây
+      timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 0) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
       setTimeout(async () => {
         try {
           const isValidUser = dataNhanVienToanVien.some(
@@ -151,8 +197,12 @@ const SignIn: React.FC = () => {
             content: `Đã xảy ra lỗi trong quá trình đăng nhập`,
           });
         }
-      }, 2000);
+      }, 3000);
     }
+
+    return () => {
+      clearInterval(timer);
+    };
   }, [layThongTin]);
 
   const validateForm = () => {
@@ -191,7 +241,7 @@ const SignIn: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    if (validateForm() && layThongTin === null) {
+    if (validateForm()) {
       try {
         const isValidUser = dataNhanVienToanVien.some(
           (nhanVien: any) =>
@@ -210,11 +260,13 @@ const SignIn: React.FC = () => {
           let jwtToken: any = await handleEncodeDangNhap(dataLogin);
           localStorage.setItem('token', jwtToken);
 
-          // console.log(khoaPhong?.value);
-
-          khoaPhong?.value === 'Phòng Quản Lý chất lượng'
-            ? navigate('/')
-            : navigate('/danh-sach-tieu-chi');
+          if (khoaPhong?.value === 'Phòng Quản Lý chất lượng') {
+            navigate('/');
+            window.location.reload();
+          } else {
+            navigate('/danh-sach-tieu-chi');
+            window.location.reload();
+          }
         } else {
           messageApi.open({
             type: 'error',
@@ -229,6 +281,10 @@ const SignIn: React.FC = () => {
         });
       }
     }
+  };
+
+  const HandleEnter = async (e: any) => {
+    if (e.key === 'Enter') await handleSubmit();
   };
 
   return (
@@ -377,43 +433,6 @@ const SignIn: React.FC = () => {
               </h2>
 
               <form>
-                <div className="mb-4">
-                  <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Tên nhân viên
-                  </label>
-                  <div className="relative">
-                    <Select
-                      isDisabled={layThongTin === null ? false : true}
-                      value={{
-                        value:
-                          layThongTin === null
-                            ? tenNhanVien?.value
-                            : layThongTin?.ho_ten,
-                        label:
-                          layThongTin === null
-                            ? tenNhanVien?.label
-                            : layThongTin?.ho_ten,
-                      }}
-                      options={
-                        layThongTin === null
-                          ? dataNhanVienToanVien.map((nhanVien: any) => ({
-                              value: nhanVien.HOTEN,
-                              label: nhanVien.HOTEN,
-                            }))
-                          : undefined
-                      }
-                      placeholder="Chọn tên nhân viên"
-                      isClearable={true}
-                      onChange={(selectedOption: any) => {
-                        setTenNhanVien(selectedOption);
-                        setErrors({ ...errors, tenNhanVien: '' });
-                      }}
-                    />
-                  </div>
-                  {errors.tenNhanVien && (
-                    <p className="text-red-500">{errors.tenNhanVien}</p>
-                  )}
-                </div>
                 <div className="mb-6">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
                     Khoa phòng
@@ -440,17 +459,56 @@ const SignIn: React.FC = () => {
                           : undefined
                       }
                       placeholder="Chọn khoa phòng"
-                      isClearable={true}
-                      onChange={(selectedOption: any) => {
-                        setKhoaPhong(selectedOption);
-                        setErrors({ ...errors, khoaPhong: '' });
-                      }}
+                      isClearable={false}
+                      onChange={handleKhoaPhongChange}
                     />
                   </div>
                   {errors.khoaPhong && (
                     <p className="text-red-500">{errors.khoaPhong}</p>
                   )}
                 </div>
+                <div className="mb-4">
+                  <label className="mb-2.5 block font-medium text-black dark:text-white">
+                    Tên nhân viên
+                  </label>
+                  <div className="relative">
+                    <Select
+                      isDisabled={layThongTin === null ? false : true}
+                      value={{
+                        value:
+                          layThongTin === null
+                            ? tenNhanVien?.value
+                            : layThongTin?.ho_ten,
+                        label:
+                          layThongTin === null
+                            ? tenNhanVien?.label
+                            : layThongTin?.ho_ten,
+                      }}
+                      options={
+                        layThongTin === null
+                          ? khoaPhong
+                            ? filteredNhanVien.map((nhanVien: any) => ({
+                                value: nhanVien.HOTEN,
+                                label: nhanVien.HOTEN,
+                              }))
+                            : [] // Hiển thị danh sách trống nếu chưa chọn khoa phòng
+                          : undefined
+                      }
+                      placeholder={
+                        khoaPhong
+                          ? 'Chọn tên nhân viên'
+                          : 'Vui lòng chọn khoa phòng trước'
+                      }
+                      isClearable={true}
+                      onChange={handleNhanVienChange}
+                      isOptionDisabled={() => !khoaPhong} // Disable nếu chưa chọn khoa phòng
+                    />
+                  </div>
+                  {errors.tenNhanVien && (
+                    <p className="text-red-500">{errors.tenNhanVien}</p>
+                  )}
+                </div>
+
                 <div className="mb-5">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
                     Mật khẩu
@@ -473,6 +531,7 @@ const SignIn: React.FC = () => {
                         );
                         setErrors({ ...errors, password: '' });
                       }}
+                      onKeyDown={(e) => HandleEnter(e)}
                       className="w-full h-[50px] rounded-lg border border-stroke bg-transparent py-3 pl-3 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
 
@@ -495,11 +554,14 @@ const SignIn: React.FC = () => {
                 <div className="mb-5">
                   <input
                     type="button"
-                    value="Đăng nhập"
+                    value={
+                      layThongTin !== null
+                        ? `Đăng nhập ${countdown > 0 ? `(${countdown}s)` : ''}`
+                        : 'Đăng nhập'
+                    }
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
                     onClick={handleSubmit}
                   />
-                  {/* <a href="http://172.16.46.104/chi-tieu">Chỉ tiêu</a> */}
                 </div>
 
                 <div className="mt-6 text-center"></div>

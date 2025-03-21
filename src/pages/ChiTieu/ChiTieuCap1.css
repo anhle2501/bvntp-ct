@@ -50,3 +50,18 @@ button:hover {
 /* .hidden {
   display: block;
 } */
+@media (max-width: 768px) {
+  .input-group textarea {
+    min-height: 100px;
+  }
+
+  .level {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .input-group {
+    gap: 8px;
+  }
+}
