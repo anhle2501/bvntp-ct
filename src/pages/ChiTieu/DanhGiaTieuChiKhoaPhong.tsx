@@ -1348,7 +1348,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                   <h3 className="text-danger font-bold">
                                     Tiêu chí - {level1Id}
                                   </h3>
-                                  {existingData.id_tieuchi}
+                                  {/* {existingData.id_tieuchi} */}
 
                                   <div className="flex flex-col sm:flex-row gap-2 mb-4">
                                     <input
@@ -1414,7 +1414,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                               <h3 className="text-primary font-bold">
                                                 Tiểu mục - {item?.so_tieu_muc}
                                               </h3>
-                                              {item?.id_tieumuc}
+                                              {/* {item?.id_tieumuc} */}
 
                                               <div className="flex flex-col sm:flex-row gap-2 mb-4">
                                                 <input
@@ -1484,7 +1484,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                                             item?.so_tieu_muc_con
                                                           }
                                                         </h3>
-                                                        {item?.id_tieumuccon}
+                                                        {/* {item?.id_tieumuccon} */}
                                                         <div
                                                           // className="input-group flex flex-col sm:flex-row gap-2 sm:gap-4"
                                                           // className="flex flex-col sm:flex-row gap-2 mb-4"

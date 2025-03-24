@@ -79,6 +79,10 @@ const DropdownUser = () => {
     }
   }, []);
 
+  const handleLichSuThaoTac = () => {
+    navigate('/lich-su-thao-tac');
+  };
+
   return (
     <>
       <div className="relative dropdown-container">
@@ -116,6 +120,33 @@ const DropdownUser = () => {
 
         {dropdownOpen && (
           <div className="absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+            <button
+              onClick={handleLichSuThaoTac}
+              className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-white lg:text-base border-t border-stroke dark:border-strokedark"
+            >
+              <svg
+                className="fill-current"
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11 0.618744C5.06875 0.618744 0.25 5.43749 0.25 11.3687C0.25 17.3 5.06875 22.1187 11 22.1187C16.9312 22.1187 21.75 17.3 21.75 11.3687C21.75 5.43749 16.9312 0.618744 11 0.618744ZM11 20.5719C5.93437 20.5719 1.79688 16.4344 1.79688 11.3687C1.79688 6.30312 5.93437 2.16562 11 2.16562C16.0656 2.16562 20.2031 6.30312 20.2031 11.3687C20.2031 16.4344 16.0656 20.5719 11 20.5719Z"
+                  fill=""
+                />
+                <path
+                  d="M12.5344 7.13128C12.5344 6.47815 12.0156 5.95941 11.3625 5.95941H10.6375C9.98438 5.95941 9.46563 6.47815 9.46563 7.13128V11.8781C9.46563 12.5312 9.98438 13.05 10.6375 13.05H11.3625C12.0156 13.05 12.5344 12.5312 12.5344 11.8781V7.13128Z"
+                  fill=""
+                />
+                <path
+                  d="M11 13.7594C10.2062 13.7594 9.55312 14.4125 9.55312 15.2063C9.55312 16 10.2062 16.6531 11 16.6531C11.7938 16.6531 12.4469 16 12.4469 15.2063C12.4469 14.4125 11.7938 13.7594 11 13.7594Z"
+                  fill=""
+                />
+              </svg>
+              Lịch sử thao tác
+            </button>
             <button
               onClick={handleDangXuat}
               className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-white lg:text-base"

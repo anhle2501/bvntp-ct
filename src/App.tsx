@@ -13,6 +13,7 @@ import DanhSachDanhGiaCuaKhoa from './pages/ChiTieu/DanhSachDanhGiaCuaKhoa';
 import DetailsChiTieu from './pages/ChiTieu/DetailsChiTieu';
 import NotFound from './pages/NotFound/NotFound';
 import { message } from 'antd';
+import LichSuThaoTac from './pages/ChiTieu/LichSuThaoTac';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -191,6 +192,15 @@ function App() {
                   <ChiTieuTheoKhoa />
                 </>
               )}
+            </>
+          }
+        />
+        <Route
+          path="/lich-su-thao-tac"
+          element={
+            <>
+              <PageTitle title="Lịch sử thao tác | NTP" />
+              <LichSuThaoTac />
             </>
           }
         />

@@ -459,7 +459,7 @@ const SignIn: React.FC = () => {
                           : undefined
                       }
                       placeholder="Chọn khoa phòng"
-                      isClearable={false}
+                      isClearable={true}
                       onChange={handleKhoaPhongChange}
                     />
                   </div>
