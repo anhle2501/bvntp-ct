@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/images.jpg';
 import { message } from 'antd';
 
