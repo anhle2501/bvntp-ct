@@ -2,7 +2,16 @@ import axios from 'axios';
 
 export const DanhSachDanhMuc = async () => {
   try {
-    let res = await fetch(`http://172.16.0.60:883/api/danh_muc`);
+    let res = await fetch(`http://172.16.0.60:83/api/danh_muc`);
+    return res.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const DanhSachDanhGia = async () => {
+  try {
+    let res = await fetch(`http://172.16.0.60:83/api/danh_gia_khoa`);
     return res.json();
   } catch (error) {
     console.log(error);
@@ -44,13 +53,16 @@ export const LuuTieuChiMoi = async (data: any) => {
 
 export const LuuTieuChiCu = async (data: any, id_tieuchi: string) => {
   try {
-    await fetch(`http://172.16.0.60:883/api/danh_muc/${sotieuchi}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
+    await fetch(
+      `http://172.16.0.60:83/api/danh_muc/update_by_id/${id_tieuchi}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    });
+    );
   } catch (error) {
     console.log(error);
   }
@@ -58,7 +70,7 @@ export const LuuTieuChiCu = async (data: any, id_tieuchi: string) => {
 
 export const ThemTieuMuc = async (data: any, id_tieuchi: string | number) => {
   try {
-    await fetch(`http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc`, {
+    await fetch(`http://172.16.0.60:83/api/danh_muc/${id_tieuchi}/tieu_muc`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -73,7 +85,7 @@ export const ThemTieuMuc = async (data: any, id_tieuchi: string | number) => {
 export const LuuTieuMucCu = async (data: any, id_tieumuc: string) => {
   try {
     await fetch(
-      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}`,
+      `http://172.16.0.60:83/api/danh_muc/update_by_id/${id_tieumuc}`,
       {
         method: 'PUT',
         headers: {
@@ -89,7 +101,7 @@ export const LuuTieuMucCu = async (data: any, id_tieumuc: string) => {
 
 export const LuuTieuMucMoi = async (data: any, id_tieuchi: string) => {
   try {
-    await fetch(`http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc`, {
+    await fetch(`http://172.16.0.60:83/api/danh_muc/${id_tieuchi}/tieu_muc`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -108,7 +120,7 @@ export const ThemTieuMucCon = async (
 ) => {
   try {
     await fetch(
-      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con`,
+      `http://172.16.0.60:83/api/danh_muc/${id_tieuchi}/tieu_muc/${id_tieumuc}/tieu_muc_con`,
       {
         method: 'POST',
         headers: {
@@ -125,7 +137,7 @@ export const ThemTieuMucCon = async (
 export const LuuTieuMucConCu = async (data: any, id_tieumuccon: string) => {
   try {
     await fetch(
-      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con/${sotieumuccon}`,
+      `http://172.16.0.60:83/api/danh_muc/update_by_id/${id_tieumuccon}`,
 
       {
         method: 'PUT',
@@ -147,43 +159,13 @@ export const LuuTieuMucConMoi = async (
 ) => {
   try {
     await fetch(
-      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con`,
+      `http://172.16.0.60:83/api/danh_muc/${id_tieuchi}/tieu_muc/${id_tieumuc}/tieu_muc_con`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      },
-    );
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const XoaTieuMuc = async (sotieuchi: number, sotieumuc: string) => {
-  try {
-    await fetch(
-      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}`,
-      {
-        method: 'DELETE',
-      },
-    );
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const XoaTieuMucCon = async (
-  sotieuchi: number,
-  sotieumuc: string,
-  sotieumuccon: string,
-) => {
-  try {
-    await fetch(
-      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con/${sotieumuccon}`,
-      {
-        method: 'DELETE',
       },
     );
   } catch (error) {
