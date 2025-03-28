@@ -57,7 +57,7 @@ const DetailsChiTieu: React.FC = () => {
 
   const fetchFileList = async () => {
     try {
-      const response = await fetch('http://172.16.0.60:883/api/list_files');
+      const response = await fetch('http://172.16.0.60:83/api/list_files');
       const data = await response.json();
 
       // Filter files by dotId and group by id_tieumuccon
@@ -101,7 +101,7 @@ const DetailsChiTieu: React.FC = () => {
   const handleDownload = async (fileId: string, filename: string) => {
     try {
       const response = await fetch(
-        `http://172.16.0.60:883/api/download_file/${fileId}`,
+        `http://172.16.0.60:83/api/download_file/${fileId}`,
       );
       const blob = await response.blob();
 

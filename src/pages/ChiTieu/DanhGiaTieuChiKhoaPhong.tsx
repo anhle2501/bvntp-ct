@@ -69,6 +69,21 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
     {},
   );
 
+  // Add search functionality
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filteredTieuChi, setFilteredTieuChi] = useState<DanhMuc[]>([]);
+
+  // Add state to track which items match the search
+  const [searchResults, setSearchResults] = useState<{
+    tieuChi: Record<string, boolean>;
+    tieuMuc: Record<string, boolean>;
+    tieuMucCon: Record<string, boolean>;
+  }>({
+    tieuChi: {},
+    tieuMuc: {},
+    tieuMucCon: {},
+  });
+
   const navigate = useNavigate();
 
   const [decodeWorkerDangNhap] = useState(
@@ -95,6 +110,102 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
     }));
   };
 
+  // Add this effect to filter the data when searchTerm or danhSachTieuChiTheoKhoa changes
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      // Nếu không có từ khóa tìm kiếm, hiển thị tất cả
+      setFilteredTieuChi(danhSachTieuChiTheoKhoa);
+      setSearchResults({
+        tieuChi: {},
+        tieuMuc: {},
+        tieuMucCon: {},
+      });
+      return;
+    }
+
+    const lowercasedSearch = searchTerm.toLowerCase();
+    const matchedTieuChi: Record<string, boolean> = {};
+    const matchedTieuMuc: Record<string, boolean> = {};
+    const matchedTieuMucCon: Record<string, boolean> = {};
+
+    // Lọc tiêu chí phù hợp với từ khóa
+    const filtered = danhSachTieuChiTheoKhoa.filter((tieuChi) => {
+      let tieuChiMatches = false;
+      let anyMatch = false;
+
+      // Kiểm tra tiêu chí
+      if (
+        tieuChi.so_tieuchi.toString().includes(lowercasedSearch) ||
+        (tieuChi.ten_tieuchi &&
+          tieuChi.ten_tieuchi.toLowerCase().includes(lowercasedSearch)) ||
+        (tieuChi.mo_ta &&
+          tieuChi.mo_ta.toLowerCase().includes(lowercasedSearch))
+      ) {
+        matchedTieuChi[tieuChi.so_tieuchi] = true;
+        tieuChiMatches = true;
+        anyMatch = true;
+      }
+
+      // Kiểm tra tiểu mục
+      if (tieuChi.cac_tieu_muc && Array.isArray(tieuChi.cac_tieu_muc)) {
+        tieuChi.cac_tieu_muc.forEach((tieuMuc) => {
+          if (
+            tieuMuc.so_tieu_muc.toString().includes(lowercasedSearch) ||
+            (tieuMuc.ten_tieu_muc &&
+              tieuMuc.ten_tieu_muc.toLowerCase().includes(lowercasedSearch)) ||
+            (tieuMuc.mo_ta_tieu_muc &&
+              tieuMuc.mo_ta_tieu_muc.toLowerCase().includes(lowercasedSearch))
+          ) {
+            matchedTieuMuc[`${tieuChi.so_tieuchi}-${tieuMuc.so_tieu_muc}`] =
+              true;
+            anyMatch = true;
+          }
+
+          // Kiểm tra tiểu mục con
+          if (
+            tieuMuc.cac_tieu_muc_con &&
+            Array.isArray(tieuMuc.cac_tieu_muc_con)
+          ) {
+            tieuMuc.cac_tieu_muc_con.forEach((tieuMucCon) => {
+              if (
+                tieuMucCon.so_tieu_muc_con
+                  .toString()
+                  .includes(lowercasedSearch) ||
+                (tieuMucCon.ten_tieu_muc_con &&
+                  tieuMucCon.ten_tieu_muc_con
+                    .toLowerCase()
+                    .includes(lowercasedSearch)) ||
+                (tieuMucCon.mo_ta_tieu_muc_con &&
+                  tieuMucCon.mo_ta_tieu_muc_con
+                    .toLowerCase()
+                    .includes(lowercasedSearch))
+              ) {
+                matchedTieuMucCon[
+                  `${tieuChi.so_tieuchi}-${tieuMuc.so_tieu_muc}-${tieuMucCon.so_tieu_muc_con}`
+                ] = true;
+                anyMatch = true;
+              }
+            });
+          }
+        });
+      }
+
+      return anyMatch;
+    });
+
+    setFilteredTieuChi(filtered);
+    setSearchResults({
+      tieuChi: matchedTieuChi,
+      tieuMuc: matchedTieuMuc,
+      tieuMucCon: matchedTieuMucCon,
+    });
+  }, [searchTerm, danhSachTieuChiTheoKhoa]);
+
+  // Handler for search input changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
   const getFileCounts = async () => {
     try {
       // Đặt lại fileCounts ngay từ đầu
@@ -106,9 +217,9 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
       const [filesResponse, phanQuyenResponse, danhGiaResponse] =
         await Promise.all([
-          axios.get('http://172.16.0.60:883/api/list_files'),
-          axios.get('http://172.16.0.60:883/api/phan_quyen'),
-          axios.get('http://172.16.0.60:883/api/danh_gia_khoa'),
+          axios.get('http://172.16.0.60:83/api/list_files'),
+          axios.get('http://172.16.0.60:83/api/phan_quyen'),
+          axios.get('http://172.16.0.60:83/api/danh_gia_khoa'),
         ]);
 
       const selectedPhanQuyen = phanQuyenResponse.data.find(
@@ -199,7 +310,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
   const checkExistingEvaluation = async () => {
     try {
       const response = await axios.get(
-        'http://172.16.0.60:883/api/danh_gia_khoa',
+        'http://172.16.0.60:83/api/danh_gia_khoa',
       );
       const evaluations = response.data;
 
@@ -224,9 +335,39 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
     }
   }, [khoaPhong, selectedDot]);
 
+  // const fetchDataTieuChiTheoKhoa = async () => {
+  //   try {
+  //     let response = await fetch('http://172.16.0.60:883/api/phan_quyen');
+  //     let data = await response.json();
+
+  //     if (data && Array.isArray(data)) {
+  //       setApiTimestamp(data[0]?.thoi_gian_ghi_nhan);
+  //       const latestPhanQuyen = data[0]?.phan_quyen;
+
+  //       const khoaData = latestPhanQuyen?.find(
+  //         (item: any) => item.ten_khoa === khoaPhong,
+  //       );
+
+  //       if (khoaData && Array.isArray(khoaData.danh_sach_tieu_chi)) {
+  //         setDanhSachTieuChiTheoKhoa(khoaData.danh_sach_tieu_chi);
+  //         setLoadingDanhMuc(false);
+  //       } else {
+  //         setDanhSachTieuChiTheoKhoa([]);
+  //         setLoadingDanhMuc(false);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     messageApi.open({
+  //       type: 'error',
+  //       content: `Đã có lỗi xảy ra trong quá trình hiển thị dữ liệu.`,
+  //     });
+  //   }
+  // };
+
   const fetchDataTieuChiTheoKhoa = async () => {
     try {
-      let response = await fetch('http://172.16.0.60:883/api/phan_quyen');
+      let response = await fetch('http://172.16.0.60:83/api/phan_quyen');
       let data = await response.json();
 
       if (data && Array.isArray(data)) {
@@ -239,9 +380,11 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
         if (khoaData && Array.isArray(khoaData.danh_sach_tieu_chi)) {
           setDanhSachTieuChiTheoKhoa(khoaData.danh_sach_tieu_chi);
+          setFilteredTieuChi(khoaData.danh_sach_tieu_chi); // Also set filtered data
           setLoadingDanhMuc(false);
         } else {
           setDanhSachTieuChiTheoKhoa([]);
+          setFilteredTieuChi([]);
           setLoadingDanhMuc(false);
         }
       }
@@ -251,6 +394,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         type: 'error',
         content: `Đã có lỗi xảy ra trong quá trình hiển thị dữ liệu.`,
       });
+      setLoadingDanhMuc(false);
     }
   };
 
@@ -297,7 +441,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
   const layDanhSachDotTheoKhoa = async () => {
     try {
-      const response = await axios.get('http://172.16.0.60:883/api/phan_quyen');
+      const response = await axios.get('http://172.16.0.60:83/api/phan_quyen');
       if (response.data) {
         // Filter and transform the data
         const dotTheoKhoa = response.data
@@ -335,12 +479,12 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       try {
         // Lấy dữ liệu từ API phân quyền
         const phanQuyenResponse = await axios.get(
-          'http://172.16.0.60:883/api/phan_quyen',
+          'http://172.16.0.60:83/api/phan_quyen',
         );
 
         // Lấy dữ liệu đánh giá
         const danhGiaResponse = await axios.get(
-          'http://172.16.0.60:883/api/danh_gia_khoa',
+          'http://172.16.0.60:83/api/danh_gia_khoa',
         );
 
         const selectedEvaluation = danhGiaResponse.data.find((danhGia: any) => {
@@ -378,7 +522,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
           // Lấy danh sách file đã tải lên cho đợt đánh giá này
           const filesResponse = await axios.get(
-            'http://172.16.0.60:883/api/list_files',
+            'http://172.16.0.60:83/api/list_files',
           );
 
           // Lọc file theo đợt đánh giá một cách chính xác
@@ -938,7 +1082,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       };
 
       const response = await axios.post(
-        'http://172.16.0.60:883/api/danh_gia_khoa',
+        'http://172.16.0.60:83/api/danh_gia_khoa',
         evaluationData,
       );
 
@@ -951,7 +1095,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
           .filter((tm) => tm.hidden === 0)
           .filter((tm) => tm.cac_tieu_muc_con && tm.cac_tieu_muc_con.length > 0)
           .map((tieuMuc) => {
-            return axios.post('http://172.16.0.60:883/api/log_danh_gia', {
+            return axios.post('http://172.16.0.60:83/api/log_danh_gia', {
               hanh_dong: 'danh_gia',
               id_danh_gia: newEvaluationId,
               id_tieuchi: tieuChi.id_tieuchi,
@@ -1042,7 +1186,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
               // Create update promise for evaluation
               const updatePromise = axios.put(
-                'http://172.16.0.60:883/api/cap_nhat_danh_gia_tieu_muc',
+                'http://172.16.0.60:83/api/cap_nhat_danh_gia_tieu_muc',
                 {
                   id_danh_gia: selectedEvaluation._id,
                   id_tieuchi: tieuChi.id_tieuchi,
@@ -1054,23 +1198,23 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                 },
               );
 
-              // // Create log promise
-              // const logPromise = axios.post(
-              //   'http://172.16.0.60:883/api/log_danh_gia',
-              //   {
-              //     hanh_dong: 'danh_gia',
-              //     id_danh_gia: selectedEvaluation._id,
-              //     id_tieuchi: tieuChi.id_tieuchi,
-              //     id_tieumuc: tieuMuc.id_tieumuc,
-              //     nguoi_thuc_hien: tenNhanVien,
-              //     ten_khoa: khoaPhong,
-              //     ten_tieuchi: tieuChi.ten_tieuchi,
-              //     ten_tieumuc: tieuMuc.ten_tieu_muc,
-              //   },
-              // );
+              // Create log promise
+              const logPromise = axios.post(
+                'http://172.16.0.60:83/api/log_danh_gia',
+                {
+                  hanh_dong: 'danh_gia',
+                  id_danh_gia: selectedEvaluation._id,
+                  id_tieuchi: tieuChi.id_tieuchi,
+                  id_tieumuc: tieuMuc.id_tieumuc,
+                  nguoi_thuc_hien: tenNhanVien,
+                  ten_khoa: khoaPhong,
+                  ten_tieuchi: tieuChi.ten_tieuchi,
+                  ten_tieumuc: tieuMuc.ten_tieu_muc,
+                },
+              );
 
               // Return both promises
-              return [updatePromise];
+              return [updatePromise, logPromise];
             }),
         )
         .flat();
@@ -1118,7 +1262,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
     try {
       const existingFilesResponse = await axios.get(
-        'http://172.16.0.60:883/api/list_files',
+        'http://172.16.0.60:83/api/list_files',
       );
 
       // const phanQuyenResponse = await axios.get(
@@ -1126,7 +1270,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       // );
 
       const danhGiaResponse = await axios.get(
-        'http://172.16.0.60:883/api/danh_gia_khoa',
+        'http://172.16.0.60:83/api/danh_gia_khoa',
       );
 
       // const selectedPhanQuyen = phanQuyenResponse.data.find(
@@ -1161,7 +1305,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         formData.append('file', files[i]);
 
         await fetch(
-          `http://172.16.0.60:883/api/upload_file/${id_dot_danh_gia}/${id_tieumuccon}`,
+          `http://172.16.0.60:83/api/upload_file/${id_dot_danh_gia}/${id_tieumuccon}`,
           {
             method: 'POST',
             body: formData,
@@ -1182,7 +1326,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
   const handleDeleteFile = async (id_tieumuccon: string, fileId: string) => {
     try {
       const response = await axios.delete(
-        `http://172.16.0.60:883/api/delete_file/${fileId}`,
+        `http://172.16.0.60:83/api/delete_file/${fileId}`,
       );
 
       if (response.status === 200) {
@@ -1213,7 +1357,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       }
 
       const danhGiaResponse = await axios.get(
-        'http://172.16.0.60:883/api/danh_gia_khoa',
+        'http://172.16.0.60:83/api/danh_gia_khoa',
       );
 
       const selectedEvaluation = danhGiaResponse.data.find((danhGia: any) => {
@@ -1234,7 +1378,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
       const id_dot_danh_gia = selectedEvaluation._id;
 
-      const response = await axios.get('http://172.16.0.60:883/api/list_files');
+      const response = await axios.get('http://172.16.0.60:83/api/list_files');
       const filteredFiles = response.data.filter(
         (file: any) =>
           file.id_dot_danh_gia === id_dot_danh_gia &&
@@ -1292,8 +1436,26 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                 placeholder="Chọn đợt"
                 isClearable={true}
                 onChange={handleDotChange}
-                className="w-full sm:w-1/2"
+                className="w-full sm:w-1/2 mb-4"
               />
+              {/* Add search input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm tiêu chí, tiểu mục, tiểu mục con..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  className="w-full sm:w-1/2 p-2 border rounded"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="bg-primary h-full px-3 pt-3 pb-3 text-white sm:right-1/2 sm:mr-8"
+                  >
+                    Đặt lại
+                  </button>
+                )}
+              </div>
             </div>
             <br />
 
@@ -1317,7 +1479,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
                   <button
                     title="In báo cáo"
-                    // className="bg-success mr-2 p-2 font-medium text-gray hover:bg-opacity-90"
                     className="w-full sm:w-auto bg-success p-2 text-gray font-medium hover:bg-opacity-90"
                     onClick={printReport}
                   >
@@ -1329,7 +1490,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                 <h1 className="font-bold mb-4">Danh mục của {khoaPhong}</h1>
                 <div id="form-container">
                   <div id="levels-container">
-                    {loadingDanhMuc === false ? (
+                    {/* {loadingDanhMuc === false ? (
                       <>
                         {danhSachTieuChiTheoKhoa &&
                         Array.isArray(danhSachTieuChiTheoKhoa) &&
@@ -1348,7 +1509,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                   <h3 className="text-danger font-bold">
                                     Tiêu chí - {level1Id}
                                   </h3>
-                                  {/* {existingData.id_tieuchi} */}
+                                 
 
                                   <div className="flex flex-col sm:flex-row gap-2 mb-4">
                                     <input
@@ -1374,16 +1535,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                       className="w-full sm:w-9/12 p-2 border rounded"
                                       defaultValue={existingData?.mo_ta || ''}
                                       rows={2}
-                                      // style={{
-                                      //   width: '70%',
-                                      //   // resize: 'none',
-                                      //   overflow: 'hidden',
-                                      //   verticalAlign: 'middle',
-                                      //   padding: '0 10px',
-                                      //   lineHeight: '2.8',
-                                      //   border: '1px solid #ced4da',
-                                      //   borderRadius: '0.25rem',
-                                      // }}
+                                     
                                       placeholder="Nội dung Tiêu chí"
                                       readOnly
                                     ></textarea>
@@ -1414,8 +1566,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                               <h3 className="text-primary font-bold">
                                                 Tiểu mục - {item?.so_tieu_muc}
                                               </h3>
-                                              {/* {item?.id_tieumuc} */}
-
+                                            
                                               <div className="flex flex-col sm:flex-row gap-2 mb-4">
                                                 <input
                                                   type="text"
@@ -1442,16 +1593,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                                     item?.mo_ta_tieu_muc || ''
                                                   }
                                                   rows={2}
-                                                  // style={{
-                                                  //   width: '70%',
-                                                  //   // resize: 'none',
-                                                  //   overflow: 'hidden',
-                                                  //   verticalAlign: 'middle',
-                                                  //   padding: '0 10px',
-                                                  //   lineHeight: '2.8',
-                                                  //   border: '1px solid #ced4da',
-                                                  //   borderRadius: '0.25rem',
-                                                  // }}
+                                               
                                                   placeholder="Nội dung Tiểu mục"
                                                   readOnly
                                                 ></textarea>
@@ -1484,10 +1626,9 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                                             item?.so_tieu_muc_con
                                                           }
                                                         </h3>
-                                                        {/* {item?.id_tieumuccon} */}
+                                                       
                                                         <div
-                                                          // className="input-group flex flex-col sm:flex-row gap-2 sm:gap-4"
-                                                          // className="flex flex-col sm:flex-row gap-2 mb-4"
+                                                        
                                                           className="input-group flex flex-col sm:flex-row gap-2"
                                                           key={
                                                             item?.so_tieu_muc_con
@@ -1544,21 +1685,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                                                 : ''
                                                             }
                                                             rows={2}
-                                                            // style={{
-                                                            //   width: '55%',
-                                                            //   // resize: 'none',
-                                                            //   overflow:
-                                                            //     'hidden',
-                                                            //   verticalAlign:
-                                                            //     'middle',
-                                                            //   padding:
-                                                            //     '10px 10px',
-                                                            //   lineHeight: '1.5',
-                                                            //   border:
-                                                            //     '1px solid #ced4da',
-                                                            //   borderRadius:
-                                                            //     '0.25rem',
-                                                            // }}
+                                                          
                                                             placeholder="Nội dung Tiểu mục con"
                                                             readOnly
                                                           ></textarea>
@@ -1668,32 +1795,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                                           </div>
                                                         </div>
 
-                                                        {/* Add the new evaluator input field */}
-                                                        {/* <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-3">
-                                                          <div className="w-full">
-                                                            <input
-                                                              type="text"
-                                                              placeholder="Nhập tên người đánh giá..."
-                                                              className="w-full p-2 border rounded"
-                                                              value={
-                                                                evaluatorNames[
-                                                                  item
-                                                                    .id_tieumuccon
-                                                                ] || ''
-                                                              }
-                                                              onChange={(e) =>
-                                                                handleEvaluatorNameChange(
-                                                                  item.id_tieumuccon,
-                                                                  e.target
-                                                                    .value,
-                                                                )
-                                                              }
-                                                              disabled={
-                                                                isEvaluationLocked
-                                                              }
-                                                            />
-                                                          </div>
-                                                        </div> */}
+                                                        
 
                                                         <div className="flex flex-col sm:flex-row gap-2 mt-4">
                                                           <div className="flex items-center">
@@ -1780,6 +1882,435 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                           <LoadingOutlined style={{ fontSize: '50px' }} />
                         </div>
                       </>
+                    )} */}
+                    {loadingDanhMuc === false ? (
+                      <>
+                        {filteredTieuChi &&
+                        Array.isArray(filteredTieuChi) &&
+                        filteredTieuChi.length > 0 ? (
+                          filteredTieuChi
+                            .filter((tc) => tc.hidden === 0)
+                            .map((existingData) => {
+                              const level1Id = existingData.so_tieuchi;
+                              const showTieuChi =
+                                !searchTerm || searchResults.tieuChi[level1Id];
+
+                              return (
+                                <div
+                                  key={`level-1-${level1Id}`}
+                                  className="level"
+                                  id={`level-1-${level1Id}`}
+                                >
+                                  {/* Chỉ hiển thị tiêu chí nếu nó phù hợp hoặc không có từ khóa tìm kiếm */}
+                                  {showTieuChi && (
+                                    <>
+                                      <h3 className="text-danger font-bold">
+                                        Tiêu chí - {level1Id}
+                                      </h3>
+                                      {/* {existingData.id_tieuchi} */}
+
+                                      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+                                        <input
+                                          className="h-10 w-full sm:w-2/12 p-2 border rounded"
+                                          type="text"
+                                          placeholder="Số"
+                                          value={level1Id}
+                                          readOnly
+                                        />
+
+                                        <input
+                                          type="text"
+                                          className="h-10 w-full sm:w-2/12 p-2 border rounded"
+                                          placeholder="Tên Tiêu chí"
+                                          id={`ten-tieuchi-cap1-${level1Id}`}
+                                          defaultValue={
+                                            existingData?.ten_tieuchi || ''
+                                          }
+                                          readOnly
+                                        />
+                                        <textarea
+                                          id={`noidung-tieuchi-cap1-${level1Id}`}
+                                          className="w-full sm:w-9/12 p-2 border rounded"
+                                          defaultValue={
+                                            existingData?.mo_ta || ''
+                                          }
+                                          rows={2}
+                                          placeholder="Nội dung Tiêu chí"
+                                          readOnly
+                                        ></textarea>
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {existingData?.cac_tieu_muc &&
+                                    Array.isArray(existingData?.cac_tieu_muc) &&
+                                    existingData?.cac_tieu_muc
+                                      .filter((item) => item.hidden === 0)
+                                      .map((item, level2Index) => {
+                                        const level2Id = level2Index + 1;
+                                        const tieuMucKey = `${level1Id}-${item.so_tieu_muc}`;
+                                        const showTieuMuc =
+                                          !searchTerm ||
+                                          searchResults.tieuMuc[tieuMucKey];
+
+                                        const existingDataTieuMuc =
+                                          existingData?.cac_tieu_muc.find(
+                                            (tc) =>
+                                              tc.so_tieu_muc ===
+                                                item?.so_tieu_muc &&
+                                              tc.hidden === 0,
+                                          );
+
+                                        return (
+                                          <>
+                                            <div
+                                              key={`${level1Id}-${level2Id}`}
+                                              className="level"
+                                              id={`level-2-${level1Id}-${level2Id}`}
+                                            >
+                                              {/* Chỉ hiển thị tiểu mục nếu nó phù hợp */}
+                                              {showTieuMuc && (
+                                                <>
+                                                  <h3 className="text-primary font-bold">
+                                                    Tiểu mục -{' '}
+                                                    {item?.so_tieu_muc}
+                                                  </h3>
+                                                  {/* {item?.id_tieumuc} */}
+
+                                                  <div className="flex flex-col sm:flex-row gap-2 mb-4">
+                                                    <input
+                                                      type="text"
+                                                      className="h-10 w-full sm:w-1/12 p-2 border rounded"
+                                                      placeholder="Số"
+                                                      value={`${item?.so_tieu_muc}`}
+                                                      readOnly
+                                                    />
+                                                    <input
+                                                      type="text"
+                                                      className="h-10 w-full sm:w-2/12 p-2 border rounded"
+                                                      placeholder="Tên Tiểu mục"
+                                                      defaultValue={
+                                                        item?.ten_tieu_muc || ''
+                                                      }
+                                                      id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
+                                                      readOnly
+                                                    />
+
+                                                    <textarea
+                                                      className="w-full sm:w-9/12 p-2 border rounded"
+                                                      id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
+                                                      defaultValue={
+                                                        item?.mo_ta_tieu_muc ||
+                                                        ''
+                                                      }
+                                                      rows={2}
+                                                      placeholder="Nội dung Tiểu mục"
+                                                      readOnly
+                                                    ></textarea>
+                                                  </div>
+                                                </>
+                                              )}
+
+                                              {existingDataTieuMuc?.cac_tieu_muc_con &&
+                                                Array.isArray(
+                                                  existingDataTieuMuc?.cac_tieu_muc_con,
+                                                ) &&
+                                                existingDataTieuMuc?.cac_tieu_muc_con
+                                                  .filter(
+                                                    (item) => item.hidden === 0,
+                                                  )
+                                                  .map((item, level3Index) => {
+                                                    const level3Id =
+                                                      level3Index + 1;
+                                                    const tieuMucConKey = `${level1Id}-${existingDataTieuMuc.so_tieu_muc}-${item.so_tieu_muc_con}`;
+                                                    const showTieuMucCon =
+                                                      !searchTerm ||
+                                                      searchResults.tieuMucCon[
+                                                        tieuMucConKey
+                                                      ];
+
+                                                    return (
+                                                      <>
+                                                        {/* Chỉ hiển thị tiểu mục con nếu nó phù hợp */}
+                                                        {showTieuMucCon && (
+                                                          <div
+                                                            key={`${level1Id}-${level2Id}-${level3Id}`}
+                                                            data-so-tieu-muc-con={
+                                                              item?.so_tieu_muc_con
+                                                            }
+                                                            className="level"
+                                                            id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
+                                                          >
+                                                            <h3 className="text-success font-bold">
+                                                              Tiểu mục con -{' '}
+                                                              {
+                                                                item?.so_tieu_muc_con
+                                                              }
+                                                            </h3>
+                                                            {/* {item?.id_tieumuccon} */}
+                                                            <div
+                                                              className="input-group flex flex-col sm:flex-row gap-2"
+                                                              key={
+                                                                item?.so_tieu_muc_con
+                                                              }
+                                                            >
+                                                              <input
+                                                                type="text"
+                                                                className="h-10 w-full sm:w-1/12 p-2 rounded"
+                                                                placeholder="Số"
+                                                                value={`${item?.so_tieu_muc_con}`}
+                                                                readOnly
+                                                              />
+                                                              <input
+                                                                type="text"
+                                                                className="h-10 w-full sm:w-2/12 p-2 rounded"
+                                                                placeholder="Tên Tiểu mục con"
+                                                                id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
+                                                                defaultValue={
+                                                                  item?.ten_tieu_muc_con
+                                                                    ? item?.ten_tieu_muc_con
+                                                                    : ''
+                                                                }
+                                                                readOnly
+                                                              />
+                                                              <input
+                                                                className="h-10 w-full sm:w-1/12 p-2 border rounded"
+                                                                type="number"
+                                                                min={1}
+                                                                placeholder="Mức"
+                                                                id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
+                                                                defaultValue={
+                                                                  item?.muc
+                                                                    ? item?.muc
+                                                                    : ''
+                                                                }
+                                                                onInput={(
+                                                                  e: any,
+                                                                ) => {
+                                                                  if (
+                                                                    e.target
+                                                                      .value <=
+                                                                    1
+                                                                  )
+                                                                    e.target.value = 1;
+                                                                }}
+                                                                readOnly
+                                                              />
+                                                              <textarea
+                                                                id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
+                                                                className="w-full sm:w-9/12 p-2 border rounded"
+                                                                defaultValue={
+                                                                  item?.mo_ta_tieu_muc_con
+                                                                    ? item?.mo_ta_tieu_muc_con
+                                                                    : ''
+                                                                }
+                                                                rows={2}
+                                                                placeholder="Nội dung Tiểu mục con"
+                                                                readOnly
+                                                              ></textarea>
+                                                            </div>
+
+                                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-3">
+                                                              <div className="flex items-center">
+                                                                <input
+                                                                  title={
+                                                                    isEvaluationLocked
+                                                                      ? `Không thể chọn do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
+                                                                      : `Chọn đánh giá`
+                                                                  }
+                                                                  type="checkbox"
+                                                                  checked={
+                                                                    evaluationScores[
+                                                                      item
+                                                                        .id_tieumuccon
+                                                                    ] === 1
+                                                                  }
+                                                                  onChange={(
+                                                                    e,
+                                                                  ) => {
+                                                                    if (
+                                                                      e.target
+                                                                        .checked
+                                                                    ) {
+                                                                      handleEvaluationChange(
+                                                                        item.id_tieumuccon,
+                                                                        1,
+                                                                      );
+                                                                    }
+                                                                  }}
+                                                                  disabled={
+                                                                    isEvaluationLocked
+                                                                  }
+                                                                  className={`h-5 w-5 ml-2 ${
+                                                                    isEvaluationLocked
+                                                                      ? 'cursor-not-allowed'
+                                                                      : 'cursor-pointer'
+                                                                  } rounded border-[1.5px] border-stroke bg-transparent accent-primary`}
+                                                                />
+                                                                <label className="ml-2 text-black text-sm sm:text-base">
+                                                                  Đạt
+                                                                </label>
+                                                              </div>
+                                                              <div className="flex items-center">
+                                                                <input
+                                                                  title={
+                                                                    isEvaluationLocked
+                                                                      ? `Không thể chọn do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
+                                                                      : `Chọn đánh giá`
+                                                                  }
+                                                                  type="checkbox"
+                                                                  checked={
+                                                                    evaluationScores[
+                                                                      item
+                                                                        .id_tieumuccon
+                                                                    ] === 0
+                                                                  }
+                                                                  onChange={(
+                                                                    e,
+                                                                  ) => {
+                                                                    if (
+                                                                      e.target
+                                                                        .checked
+                                                                    ) {
+                                                                      handleEvaluationChange(
+                                                                        item.id_tieumuccon,
+                                                                        0,
+                                                                      );
+                                                                    }
+                                                                  }}
+                                                                  disabled={
+                                                                    isEvaluationLocked
+                                                                  }
+                                                                  className={`h-5 w-5 ml-2 ${
+                                                                    isEvaluationLocked
+                                                                      ? 'cursor-not-allowed'
+                                                                      : 'cursor-pointer'
+                                                                  } rounded border-[1.5px] border-stroke bg-transparent accent-primary`}
+                                                                />
+                                                                <label className="ml-2 text-black text-sm sm:text-base">
+                                                                  Không đạt
+                                                                </label>
+                                                              </div>
+                                                            </div>
+                                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-3">
+                                                              <div className="w-full">
+                                                                <textarea
+                                                                  rows={2}
+                                                                  placeholder="Nhập ghi chú đánh giá..."
+                                                                  className="w-full p-2 border rounded"
+                                                                  value={
+                                                                    evaluationNotes[
+                                                                      item
+                                                                        .id_tieumuccon
+                                                                    ] || ''
+                                                                  }
+                                                                  onChange={(
+                                                                    e,
+                                                                  ) =>
+                                                                    handleNoteChange(
+                                                                      item.id_tieumuccon,
+                                                                      e.target
+                                                                        .value,
+                                                                    )
+                                                                  }
+                                                                  disabled={
+                                                                    isEvaluationLocked
+                                                                  }
+                                                                ></textarea>
+                                                              </div>
+                                                            </div>
+
+                                                            <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                                                              <div className="flex items-center">
+                                                                <input
+                                                                  type="file"
+                                                                  id={`file-${item.id_tieumuccon}`}
+                                                                  onChange={(
+                                                                    e,
+                                                                  ) =>
+                                                                    handleFileUpload(
+                                                                      e,
+                                                                      item?.id_tieumuccon,
+                                                                    )
+                                                                  }
+                                                                  className="hidden"
+                                                                  multiple
+                                                                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                                                />
+                                                                <button
+                                                                  title={
+                                                                    isEvaluationLocked
+                                                                      ? `Không thể tải file do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
+                                                                      : `Đính kèm file`
+                                                                  }
+                                                                  onClick={() =>
+                                                                    document
+                                                                      .getElementById(
+                                                                        `file-${item.id_tieumuccon}`,
+                                                                      )
+                                                                      ?.click()
+                                                                  }
+                                                                  disabled={
+                                                                    isEvaluationLocked
+                                                                  }
+                                                                  className={`${
+                                                                    isEvaluationLocked
+                                                                      ? 'cursor-not-allowed opacity-50'
+                                                                      : 'cursor-pointer'
+                                                                  } bg-primary text-white px-3 py-1 rounded hover:bg-opacity-90 mr-2 flex items-center`}
+                                                                >
+                                                                  <UploadOutlined className="mr-1" />{' '}
+                                                                  Tải file lên
+                                                                </button>
+
+                                                                <button
+                                                                  onClick={() =>
+                                                                    showFileList(
+                                                                      item.id_tieumuccon,
+                                                                    )
+                                                                  }
+                                                                  className="bg-success text-white px-3 py-1 rounded hover:bg-opacity-90 flex items-center"
+                                                                >
+                                                                  <EyeOutlined className="mr-1" />
+                                                                  Xem danh sách
+                                                                  file (
+                                                                  {fileCounts[
+                                                                    item
+                                                                      .id_tieumuccon
+                                                                  ] || 0}
+                                                                  )
+                                                                </button>
+                                                              </div>
+                                                            </div>
+                                                          </div>
+                                                        )}
+                                                      </>
+                                                    );
+                                                  })}
+                                            </div>
+                                          </>
+                                        );
+                                      })}
+                                </div>
+                              );
+                            })
+                        ) : (
+                          <>
+                            {' '}
+                            <div className="text-center text-lg font-medium">
+                              {searchTerm
+                                ? 'Không tìm thấy kết quả phù hợp với từ khóa tìm kiếm'
+                                : 'Không tìm thấy tiêu chí nào'}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-center">
+                          <LoadingOutlined style={{ fontSize: '50px' }} />
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -1821,7 +2352,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                   title="Tải file về máy"
                   onClick={() =>
                     window.open(
-                      `http://172.16.0.60:883/api/download_file/${file.fileId}`,
+                      `http://172.16.0.60:83/api/download_file/${file.fileId}`,
                       '_blank',
                     )
                   }

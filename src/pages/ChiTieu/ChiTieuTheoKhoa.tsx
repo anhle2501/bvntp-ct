@@ -23,6 +23,21 @@ const ChiTieuTheoKhoa: React.FC = () => {
 
   const [selectedDot, setSelectedDot] = useState<string>('');
 
+  // Add search functionality
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filteredTieuChi, setFilteredTieuChi] = useState<DanhMuc[]>([]);
+
+  // Thay đổi cấu trúc state để lưu trữ thông tin về các phần tử phù hợp
+  const [searchResults, setSearchResults] = useState<{
+    tieuChi: Record<string, boolean>;
+    tieuMuc: Record<string, boolean>;
+    tieuMucCon: Record<string, boolean>;
+  }>({
+    tieuChi: {},
+    tieuMuc: {},
+    tieuMucCon: {},
+  });
+
   const navigate = useNavigate();
 
   const [decodeWorkerDangNhap] = useState(
@@ -56,7 +71,7 @@ const ChiTieuTheoKhoa: React.FC = () => {
 
   const layDanhSachDotTheoKhoa = async () => {
     try {
-      const response = await axios.get('http://172.16.0.60:883/api/phan_quyen');
+      const response = await axios.get('http://172.16.0.60:83/api/phan_quyen');
       if (response.data) {
         // Filter and transform the data
         const dotTheoKhoa = response.data
@@ -103,6 +118,72 @@ const ChiTieuTheoKhoa: React.FC = () => {
     }
   }, [khoaPhong]);
 
+  // Add this effect to filter the data when searchTerm or danhSachTieuChiTheoKhoa changes
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredTieuChi(danhSachTieuChiTheoKhoa);
+      return;
+    }
+
+    const lowercasedSearch = searchTerm.toLowerCase();
+
+    const filtered = danhSachTieuChiTheoKhoa.filter((tieuChi) => {
+      // Search in tiêu chí
+      if (
+        tieuChi.so_tieuchi.toString().includes(lowercasedSearch) ||
+        (tieuChi.ten_tieuchi &&
+          tieuChi.ten_tieuchi.toLowerCase().includes(lowercasedSearch)) ||
+        (tieuChi.mo_ta &&
+          tieuChi.mo_ta.toLowerCase().includes(lowercasedSearch))
+      ) {
+        return true;
+      }
+
+      // Search in tiểu mục
+      if (tieuChi.cac_tieu_muc && Array.isArray(tieuChi.cac_tieu_muc)) {
+        for (const tieuMuc of tieuChi.cac_tieu_muc) {
+          if (
+            tieuMuc.so_tieu_muc.toString().includes(lowercasedSearch) ||
+            (tieuMuc.ten_tieu_muc &&
+              tieuMuc.ten_tieu_muc.toLowerCase().includes(lowercasedSearch)) ||
+            (tieuMuc.mo_ta_tieu_muc &&
+              tieuMuc.mo_ta_tieu_muc.toLowerCase().includes(lowercasedSearch))
+          ) {
+            return true;
+          }
+
+          // Search in tiểu mục con
+          if (
+            tieuMuc.cac_tieu_muc_con &&
+            Array.isArray(tieuMuc.cac_tieu_muc_con)
+          ) {
+            for (const tieuMucCon of tieuMuc.cac_tieu_muc_con) {
+              if (
+                tieuMucCon.so_tieu_muc_con
+                  .toString()
+                  .includes(lowercasedSearch) ||
+                (tieuMucCon.ten_tieu_muc_con &&
+                  tieuMucCon.ten_tieu_muc_con
+                    .toLowerCase()
+                    .includes(lowercasedSearch)) ||
+                (tieuMucCon.mo_ta_tieu_muc_con &&
+                  tieuMucCon.mo_ta_tieu_muc_con
+                    .toLowerCase()
+                    .includes(lowercasedSearch))
+              ) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+
+      return false;
+    });
+
+    setFilteredTieuChi(filtered);
+  }, [searchTerm, danhSachTieuChiTheoKhoa]);
+
   const handleDotChange = (selectedOption: any) => {
     // Bắt buộc tạo giá trị state mới ngay cả khi chọn cùng một option
     setLoadingDanhMuc(true);
@@ -114,6 +195,11 @@ const ChiTieuTheoKhoa: React.FC = () => {
     setTimeout(() => {
       setSelectedDot(selectedOption ? selectedOption.value : '');
     }, 0);
+  };
+
+  // Handler for search input changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
   };
 
   // Modify the fetchDataTieuChiTheoKhoa function to use the selected dot
@@ -204,8 +290,27 @@ const ChiTieuTheoKhoa: React.FC = () => {
                 placeholder="Chọn đợt"
                 isClearable={true}
                 onChange={handleDotChange} // Add the handler here
-                className="w-full sm:w-1/2"
+                className="w-full sm:w-1/2 mb-4"
               />
+
+              {/* Add search input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm tiêu chí, tiểu mục, tiểu mục con..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  className="w-full sm:w-1/2 p-2 border rounded"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="bg-primary h-full px-3 pt-3 pb-3 text-white sm:right-1/2 sm:mr-8"
+                  >
+                    Đặt lại
+                  </button>
+                )}
+              </div>
             </div>
             {selectedDot && (
               <>
@@ -213,13 +318,21 @@ const ChiTieuTheoKhoa: React.FC = () => {
                   <div id="levels-container" className="space-y-6">
                     {loadingDanhMuc === false ? (
                       <>
-                        {danhSachTieuChiTheoKhoa &&
+                        {/* {danhSachTieuChiTheoKhoa &&
                         Array.isArray(danhSachTieuChiTheoKhoa) &&
                         danhSachTieuChiTheoKhoa.length > 0 ? (
                           danhSachTieuChiTheoKhoa
                             .filter((tc) => tc.hidden === 0)
+                            .map((existingData) => { */}
+                        {filteredTieuChi &&
+                        Array.isArray(filteredTieuChi) &&
+                        filteredTieuChi.length > 0 ? (
+                          filteredTieuChi
+                            .filter((tc) => tc.hidden === 0)
                             .map((existingData) => {
                               const level1Id = existingData.so_tieuchi;
+                              const showTieuChi =
+                                !searchTerm || searchResults.tieuChi[level1Id];
 
                               return (
                                 <div
@@ -227,53 +340,49 @@ const ChiTieuTheoKhoa: React.FC = () => {
                                   className="level"
                                   id={`level-1-${level1Id}`}
                                 >
-                                  <h3 className="text-red-600 font-bold text-lg md:text-xl mb-4">
-                                    Tiêu chí - {level1Id}
-                                  </h3>
+                                  {/* Chỉ hiển thị tiêu chí nếu nó phù hợp hoặc không có từ khóa tìm kiếm */}
+                                  {showTieuChi && (
+                                    <>
+                                      <h3 className="text-red-600 font-bold text-lg md:text-xl mb-4">
+                                        Tiêu chí - {level1Id}
+                                      </h3>
 
-                                  <div className="flex flex-col md:flex-row gap-4 mb-4">
-                                    <input
-                                      type="text"
-                                      placeholder="Số"
-                                      value={level1Id}
-                                      readOnly
-                                      className="h-10 w-full md:w-[8%] p-2 border rounded"
-                                    />
+                                      <div className="flex flex-col md:flex-row gap-4 mb-4">
+                                        <input
+                                          type="text"
+                                          placeholder="Số"
+                                          value={level1Id}
+                                          readOnly
+                                          className="h-10 w-full md:w-[8%] p-2 border rounded"
+                                        />
 
-                                    <input
-                                      type="text"
-                                      placeholder="Tên Tiêu chí"
-                                      id={`ten-tieuchi-cap1-${level1Id}`}
-                                      defaultValue={
-                                        existingData?.ten_tieuchi || ''
-                                      }
-                                      className="h-10 w-full md:w-[20%] p-2 border rounded"
-                                      readOnly
-                                    />
-                                    <textarea
-                                      id={`noidung-tieuchi-cap1-${level1Id}`}
-                                      defaultValue={existingData?.mo_ta || ''}
-                                      rows={2}
-                                      className="w-full md:w-[72%] p-2 border rounded min-h-[60px] resize-y"
-                                      // style={{
-                                      //   width: '70%',
-                                      //   // resize: 'none',
-                                      //   overflow: 'hidden',
-                                      //   verticalAlign: 'middle',
-                                      //   padding: '0 10px',
-                                      //   lineHeight: '2.8',
-                                      //   border: '1px solid #ced4da',
-                                      //   borderRadius: '0.25rem',
-                                      // }}
-                                      placeholder="Nội dung Tiêu chí"
-                                      readOnly
-                                    ></textarea>
-                                  </div>
+                                        <input
+                                          type="text"
+                                          placeholder="Tên Tiêu chí"
+                                          id={`ten-tieuchi-cap1-${level1Id}`}
+                                          defaultValue={
+                                            existingData?.ten_tieuchi || ''
+                                          }
+                                          className="h-10 w-full md:w-[20%] p-2 border rounded"
+                                          readOnly
+                                        />
+                                        <textarea
+                                          id={`noidung-tieuchi-cap1-${level1Id}`}
+                                          defaultValue={
+                                            existingData?.mo_ta || ''
+                                          }
+                                          rows={2}
+                                          className="w-full md:w-[72%] p-2 border rounded min-h-[60px] resize-y"
+                                          placeholder="Nội dung Tiêu chí"
+                                          readOnly
+                                        ></textarea>
+                                      </div>
+                                    </>
+                                  )}
 
                                   {existingData?.cac_tieu_muc &&
                                     Array.isArray(existingData?.cac_tieu_muc) &&
                                     existingData?.cac_tieu_muc
-                                      // .filter((item) => item.hidden === 0)
                                       .filter((item) => {
                                         // Only show tiểu mục that are not hidden AND have at least one visible tiểu mục con
                                         return (
@@ -288,6 +397,10 @@ const ChiTieuTheoKhoa: React.FC = () => {
                                       })
                                       .map((item, level2Index) => {
                                         const level2Id = level2Index + 1;
+                                        const tieuMucKey = `${level1Id}-${item.so_tieu_muc}`;
+                                        const showTieuMuc =
+                                          !searchTerm ||
+                                          searchResults.tieuMuc[tieuMucKey];
 
                                         const existingDataTieuMuc =
                                           existingData?.cac_tieu_muc.find(
@@ -304,51 +417,47 @@ const ChiTieuTheoKhoa: React.FC = () => {
                                               className="level"
                                               id={`level-2-${level1Id}-${level2Id}`}
                                             >
-                                              <h3 className="text-primary font-bold">
-                                                Tiểu mục - {item?.so_tieu_muc}
-                                              </h3>
+                                              {/* Chỉ hiển thị tiểu mục nếu nó phù hợp */}
+                                              {showTieuMuc && (
+                                                <>
+                                                  <h3 className="text-primary font-bold">
+                                                    Tiểu mục -{' '}
+                                                    {item?.so_tieu_muc}
+                                                  </h3>
 
-                                              {/* <div className="input-group"> */}
-                                              <div className="flex flex-col md:flex-row gap-4 mb-4">
-                                                <input
-                                                  type="text"
-                                                  placeholder="Số"
-                                                  value={`${item?.so_tieu_muc}`}
-                                                  readOnly
-                                                  className="h-10 w-full md:w-[8%] p-2 border rounded"
-                                                />
-                                                <input
-                                                  type="text"
-                                                  placeholder="Tên Tiểu mục"
-                                                  defaultValue={
-                                                    item?.ten_tieu_muc || ''
-                                                  }
-                                                  className="h-10 w-full md:w-[20%] p-2 border rounded"
-                                                  id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                                  readOnly
-                                                />
+                                                  <div className="flex flex-col md:flex-row gap-4 mb-4">
+                                                    <input
+                                                      type="text"
+                                                      placeholder="Số"
+                                                      value={`${item?.so_tieu_muc}`}
+                                                      readOnly
+                                                      className="h-10 w-full md:w-[8%] p-2 border rounded"
+                                                    />
+                                                    <input
+                                                      type="text"
+                                                      placeholder="Tên Tiểu mục"
+                                                      defaultValue={
+                                                        item?.ten_tieu_muc || ''
+                                                      }
+                                                      className="h-10 w-full md:w-[20%] p-2 border rounded"
+                                                      id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
+                                                      readOnly
+                                                    />
 
-                                                <textarea
-                                                  id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                                  className="w-full md:w-[72%] p-2 border rounded min-h-[60px] resize-y"
-                                                  defaultValue={
-                                                    item?.mo_ta_tieu_muc || ''
-                                                  }
-                                                  rows={2}
-                                                  // style={{
-                                                  //   width: '70%',
-                                                  //   // resize: 'none',
-                                                  //   overflow: 'hidden',
-                                                  //   verticalAlign: 'middle',
-                                                  //   padding: '0 10px',
-                                                  //   lineHeight: '2.8',
-                                                  //   border: '1px solid #ced4da',
-                                                  //   borderRadius: '0.25rem',
-                                                  // }}
-                                                  placeholder="Nội dung Tiểu mục"
-                                                  readOnly
-                                                ></textarea>
-                                              </div>
+                                                    <textarea
+                                                      id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
+                                                      className="w-full md:w-[72%] p-2 border rounded min-h-[60px] resize-y"
+                                                      defaultValue={
+                                                        item?.mo_ta_tieu_muc ||
+                                                        ''
+                                                      }
+                                                      rows={2}
+                                                      placeholder="Nội dung Tiểu mục"
+                                                      readOnly
+                                                    ></textarea>
+                                                  </div>
+                                                </>
+                                              )}
 
                                               {existingDataTieuMuc?.cac_tieu_muc_con &&
                                                 Array.isArray(
@@ -361,98 +470,96 @@ const ChiTieuTheoKhoa: React.FC = () => {
                                                   .map((item, level3Index) => {
                                                     const level3Id =
                                                       level3Index + 1;
+                                                    const tieuMucConKey = `${level1Id}-${existingDataTieuMuc.so_tieu_muc}-${item.so_tieu_muc_con}`;
+                                                    const showTieuMucCon =
+                                                      !searchTerm ||
+                                                      searchResults.tieuMucCon[
+                                                        tieuMucConKey
+                                                      ];
 
                                                     return (
-                                                      <div
-                                                        key={`${level1Id}-${level2Id}-${level3Id}`}
-                                                        data-so-tieu-muc-con={
-                                                          item?.so_tieu_muc_con
-                                                        }
-                                                        className="level"
-                                                        id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
-                                                      >
-                                                        <h3 className="text-success font-bold">
-                                                          Tiểu mục con -{' '}
-                                                          {
-                                                            item?.so_tieu_muc_con
-                                                          }
-                                                        </h3>
+                                                      <>
+                                                        {/* Chỉ hiển thị tiểu mục con nếu nó phù hợp */}
+                                                        {showTieuMucCon && (
+                                                          <div
+                                                            key={`${level1Id}-${level2Id}-${level3Id}`}
+                                                            data-so-tieu-muc-con={
+                                                              item?.so_tieu_muc_con
+                                                            }
+                                                            className="level"
+                                                            id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
+                                                          >
+                                                            <h3 className="text-success font-bold">
+                                                              Tiểu mục con -{' '}
+                                                              {
+                                                                item?.so_tieu_muc_con
+                                                              }
+                                                            </h3>
 
-                                                        <div
-                                                          // className="input-group"
-                                                          className="flex flex-col md:flex-row gap-4"
-                                                          key={
-                                                            item?.so_tieu_muc_con
-                                                          }
-                                                        >
-                                                          <input
-                                                            type="text"
-                                                            placeholder="Số"
-                                                            value={`${item?.so_tieu_muc_con}`}
-                                                            readOnly
-                                                            className="h-10 w-full md:w-[8%] p-2 border rounded"
-                                                          />
-                                                          <input
-                                                            type="text"
-                                                            placeholder="Tên Tiểu mục con"
-                                                            id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                            defaultValue={
-                                                              item?.ten_tieu_muc_con
-                                                                ? item?.ten_tieu_muc_con
-                                                                : ''
-                                                            }
-                                                            readOnly
-                                                            className="h-10 w-full md:w-[20%] p-2 border rounded"
-                                                          />
-                                                          <input
-                                                            type="number"
-                                                            min={1}
-                                                            placeholder="Mức"
-                                                            id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                            defaultValue={
-                                                              item?.muc
-                                                                ? item?.muc
-                                                                : ''
-                                                            }
-                                                            onInput={(
-                                                              e: any,
-                                                            ) => {
-                                                              if (
-                                                                e.target
-                                                                  .value <= 1
-                                                              )
-                                                                e.target.value = 1;
-                                                            }}
-                                                            readOnly
-                                                            className="h-10 w-full md:w-[10%] p-2 border rounded"
-                                                          />
-                                                          <textarea
-                                                            id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                            defaultValue={
-                                                              item?.mo_ta_tieu_muc_con
-                                                                ? item?.mo_ta_tieu_muc_con
-                                                                : ''
-                                                            }
-                                                            className="w-full md:w-[62%] p-2 border rounded min-h-[60px] resize-y"
-                                                            rows={2}
-                                                            // style={{
-                                                            //   width: '55%',
-                                                            //   // resize: 'none',
-                                                            //   overflow: 'hidden',
-                                                            //   verticalAlign:
-                                                            //     'middle',
-                                                            //   padding: '10px 10px',
-                                                            //   lineHeight: '1.5',
-                                                            //   border:
-                                                            //     '1px solid #ced4da',
-                                                            //   borderRadius:
-                                                            //     '0.25rem',
-                                                            // }}
-                                                            placeholder="Nội dung Tiểu mục con"
-                                                            readOnly
-                                                          ></textarea>
-                                                        </div>
-                                                      </div>
+                                                            <div
+                                                              className="flex flex-col md:flex-row gap-4"
+                                                              key={
+                                                                item?.so_tieu_muc_con
+                                                              }
+                                                            >
+                                                              <input
+                                                                type="text"
+                                                                placeholder="Số"
+                                                                value={`${item?.so_tieu_muc_con}`}
+                                                                readOnly
+                                                                className="h-10 w-full md:w-[8%] p-2 border rounded"
+                                                              />
+                                                              <input
+                                                                type="text"
+                                                                placeholder="Tên Tiểu mục con"
+                                                                id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
+                                                                defaultValue={
+                                                                  item?.ten_tieu_muc_con
+                                                                    ? item?.ten_tieu_muc_con
+                                                                    : ''
+                                                                }
+                                                                readOnly
+                                                                className="h-10 w-full md:w-[20%] p-2 border rounded"
+                                                              />
+                                                              <input
+                                                                type="number"
+                                                                min={1}
+                                                                placeholder="Mức"
+                                                                id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
+                                                                defaultValue={
+                                                                  item?.muc
+                                                                    ? item?.muc
+                                                                    : ''
+                                                                }
+                                                                onInput={(
+                                                                  e: any,
+                                                                ) => {
+                                                                  if (
+                                                                    e.target
+                                                                      .value <=
+                                                                    1
+                                                                  )
+                                                                    e.target.value = 1;
+                                                                }}
+                                                                readOnly
+                                                                className="h-10 w-full md:w-[10%] p-2 border rounded"
+                                                              />
+                                                              <textarea
+                                                                id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
+                                                                defaultValue={
+                                                                  item?.mo_ta_tieu_muc_con
+                                                                    ? item?.mo_ta_tieu_muc_con
+                                                                    : ''
+                                                                }
+                                                                className="w-full md:w-[62%] p-2 border rounded min-h-[60px] resize-y"
+                                                                rows={2}
+                                                                placeholder="Nội dung Tiểu mục con"
+                                                                readOnly
+                                                              ></textarea>
+                                                            </div>
+                                                          </div>
+                                                        )}
+                                                      </>
                                                     );
                                                   })}
                                             </div>
@@ -466,7 +573,9 @@ const ChiTieuTheoKhoa: React.FC = () => {
                           <>
                             {' '}
                             <div className="text-center text-lg font-medium">
-                              Không tìm thấy tiêu chí nào
+                              {searchTerm
+                                ? 'Không tìm thấy kết quả phù hợp với từ khóa tìm kiếm'
+                                : 'Không tìm thấy tiêu chí nào'}
                             </div>
                           </>
                         )}

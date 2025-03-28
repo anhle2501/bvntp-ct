@@ -72,7 +72,7 @@ const DanhSachDanhGiaCuaKhoa = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        'http://172.16.0.60:883/api/danh_gia_khoa',
+        'http://172.16.0.60:83/api/danh_gia_khoa',
       );
       const data = response.data.map((item: any) => ({
         ...item,
@@ -118,7 +118,7 @@ const DanhSachDanhGiaCuaKhoa = () => {
 
       for (const data of evaluationData) {
         await axios.put(
-          'http://172.16.0.60:883/api/cap_nhat_danh_gia_tieu_muc',
+          'http://172.16.0.60:83/api/cap_nhat_danh_gia_tieu_muc',
           data,
         );
       }

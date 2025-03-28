@@ -129,7 +129,6 @@ const ChiTieuCap1: React.FC = () => {
 
           const sortedData = sortEntireStructure(data);
           setDataTieuChi(sortedData);
-
           setLoadingDanhMuc(false);
           setStatus('Fetch');
         }
@@ -986,7 +985,6 @@ const ChiTieuCap1: React.FC = () => {
                     return (
                       <div
                         key={`level-1-${level1Id}`}
-                        // className="level"
                         className="bg-white rounded-lg shadow-sm p-4"
                         id={`level-1-${level1Id}`}
                       >
@@ -1015,16 +1013,6 @@ const ChiTieuCap1: React.FC = () => {
                             className="w-full sm:w-[70%] p-2 border rounded min-h-[60px]"
                             defaultValue={existingData?.mo_ta || ''}
                             rows={2}
-                            // style={{
-                            //   width: '70%',
-                            //   resize: 'none',
-                            //   overflow: 'hidden',
-                            //   verticalAlign: 'middle',
-                            //   padding: '0 10px',
-                            //   lineHeight: '2.8',
-                            //   border: '1px solid #ced4da',
-                            //   borderRadius: '0.25rem',
-                            // }}
                             placeholder="Nội dung Tiêu chí"
                           ></textarea>
 
@@ -1090,7 +1078,6 @@ const ChiTieuCap1: React.FC = () => {
                               <>
                                 <div
                                   key={`${item?.so_tieu_muc}-${forceUpdate}`}
-                                  // className="level"
                                   className="ml-4 mt-4 bg-gray-50 rounded-lg p-4"
                                   id={`level-2-${level1Id}-${level2Id}`}
                                 >
@@ -1104,7 +1091,6 @@ const ChiTieuCap1: React.FC = () => {
                                       placeholder="Số"
                                       value={`${item?.so_tieu_muc}`}
                                       readOnly
-                                      // style={{ width: '8%' }}
                                       className="h-10 w-full sm:w-[8%] p-2 border rounded"
                                     />
                                     <input
@@ -1112,7 +1098,6 @@ const ChiTieuCap1: React.FC = () => {
                                       placeholder="Tên Tiểu mục"
                                       defaultValue={item?.ten_tieu_muc || ''}
                                       id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                      // style={{ width: '10%' }}
                                       className="h-10 w-full sm:w-[10%] p-2 border rounded"
                                     />
 
@@ -1121,16 +1106,6 @@ const ChiTieuCap1: React.FC = () => {
                                       className="w-full sm:w-[70%] p-2 border rounded min-h-[60px]"
                                       defaultValue={item?.mo_ta_tieu_muc || ''}
                                       rows={2}
-                                      // style={{
-                                      //   width: '70%',
-                                      //   resize: 'none',
-                                      //   overflow: 'hidden',
-                                      //   verticalAlign: 'middle',
-                                      //   padding: '0 10px',
-                                      //   lineHeight: '2.8',
-                                      //   border: '1px solid #ced4da',
-                                      //   borderRadius: '0.25rem',
-                                      // }}
                                       placeholder="Nội dung Tiểu mục"
                                     ></textarea>
                                     <div className="flex flex-row gap-2 sm:flex-nowrap">
@@ -1248,7 +1223,6 @@ const ChiTieuCap1: React.FC = () => {
                                           data-so-tieu-muc-con={
                                             item?.so_tieu_muc_con
                                           }
-                                          // className="level"
                                           className="ml-2 sm:ml-4 mt-4 bg-white rounded-lg p-3 sm:p-4"
                                           id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
                                         >
@@ -1258,7 +1232,6 @@ const ChiTieuCap1: React.FC = () => {
                                           </h3>
 
                                           <div
-                                            // className="input-group"
                                             className="flex flex-col sm:flex-row gap-3"
                                             key={item?.so_tieu_muc_con}
                                           >
@@ -1303,16 +1276,6 @@ const ChiTieuCap1: React.FC = () => {
                                                   : ''
                                               }
                                               rows={2}
-                                              // style={{
-                                              //   width: '55%',
-                                              //   resize: 'none',
-                                              //   overflow: 'hidden',
-                                              //   verticalAlign: 'middle',
-                                              //   padding: '10px 10px',
-                                              //   lineHeight: '1.5',
-                                              //   border: '1px solid #ced4da',
-                                              //   borderRadius: '0.25rem',
-                                              // }}
                                               placeholder="Nội dung Tiểu mục con"
                                             ></textarea>
                                             <div className="flex flex-row gap-2 sm:flex-nowrap">

@@ -57,7 +57,7 @@ const SignIn: React.FC = () => {
 
   const layThongTinNguoiDung = async () => {
     try {
-      let res = await fetch('http://172.16.0.60:883/api/get_info');
+      let res = await fetch('http://172.16.0.60:83/api/get_info');
       if (res) {
         let info = await res.json();
 

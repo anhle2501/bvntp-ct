@@ -58,31 +58,35 @@ const ChecklistTable: React.FC = () => {
       onChange={(e) => setDotDuocChon(e.target.value)}
       className="bg-white border p-2 rounded"
     >
-      {danhSachDot
-        .sort(
-          (a, b) =>
-            new Date(b.thoi_gian_ghi_nhan).getTime() -
-            new Date(a.thoi_gian_ghi_nhan).getTime(),
-        )
-        .map((dot) => (
-          <option key={dot._id} value={dot._id}>
-            {new Date(dot.thoi_gian_ghi_nhan).toLocaleString('vi-VN', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-            })}
-          </option>
-        ))}
+      {danhSachDot && danhSachDot.length > 0 ? (
+        danhSachDot
+          .sort(
+            (a, b) =>
+              new Date(b.thoi_gian_ghi_nhan).getTime() -
+              new Date(a.thoi_gian_ghi_nhan).getTime(),
+          )
+          .map((dot) => (
+            <option key={dot._id} value={dot._id}>
+              {new Date(dot.thoi_gian_ghi_nhan).toLocaleString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+              })}
+            </option>
+          ))
+      ) : (
+        <option value="">Không tìm thấy đợt nào</option>
+      )}
     </select>
   );
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://172.16.0.60:883/api/phan_quyen');
+        const response = await fetch('http://172.16.0.60:83/api/phan_quyen');
         const data = await response.json();
         setDanhSachDot(data);
 

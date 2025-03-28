@@ -35,7 +35,7 @@ export const DanhSachNhanVienToanVien = async () => {
 
 export const PhanQuyenTieuChi = async (data: any) => {
   try {
-    await fetch(`http://172.16.0.60:883/api/phan_quyen`, {
+    await fetch(`http://172.16.0.60:83/api/phan_quyen`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ export const PhanQuyenTieuChi = async (data: any) => {
 
 export const DanhSachPhanQuyenTieuChi = async () => {
   try {
-    let res = await axios.get(`http://172.16.0.60:883/api/phan_quyen`);
+    let res = await axios.get(`http://172.16.0.60:83/api/phan_quyen`);
 
     return res.data;
   } catch (error) {
