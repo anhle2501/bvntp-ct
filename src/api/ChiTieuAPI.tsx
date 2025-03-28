@@ -1,7 +1,28 @@
+import axios from 'axios';
+
 export const DanhSachDanhMuc = async () => {
   try {
-    let res = await fetch(`http://172.16.0.60:83/api/danh_muc`);
+    let res = await fetch(`http://172.16.0.60:883/api/danh_muc`);
     return res.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const CapNhatDanhGia = async (data: any) => {
+  try {
+    await axios.put(
+      `http://172.16.0.60:83/api/cap_nhat_danhgia_tieu_muc`,
+      data,
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const ThemMoiDanhGia = async (data: any) => {
+  try {
+    await axios.post(`http://172.16.0.60:83/api/danh_gia_khoa`, data);
   } catch (error) {
     console.log(error);
   }
@@ -21,9 +42,9 @@ export const LuuTieuChiMoi = async (data: any) => {
   }
 };
 
-export const LuuTieuChiCu = async (data: any, sotieuchi: number) => {
+export const LuuTieuChiCu = async (data: any, id_tieuchi: string) => {
   try {
-    await fetch(`http://172.16.0.60:83/api/danh_muc/${sotieuchi}`, {
+    await fetch(`http://172.16.0.60:883/api/danh_muc/${sotieuchi}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -35,9 +56,9 @@ export const LuuTieuChiCu = async (data: any, sotieuchi: number) => {
   }
 };
 
-export const ThemTieuMuc = async (data: any, sotieuchi: number) => {
+export const ThemTieuMuc = async (data: any, id_tieuchi: string | number) => {
   try {
-    await fetch(`http://172.16.0.60:83/api/danh_muc/${sotieuchi}/tieu_muc`, {
+    await fetch(`http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,14 +70,10 @@ export const ThemTieuMuc = async (data: any, sotieuchi: number) => {
   }
 };
 
-export const LuuTieuMucCu = async (
-  data: any,
-  sotieuchi: number,
-  sotieumuc: string,
-) => {
+export const LuuTieuMucCu = async (data: any, id_tieumuc: string) => {
   try {
     await fetch(
-      `http://172.16.0.60:83/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}`,
+      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}`,
       {
         method: 'PUT',
         headers: {
@@ -70,9 +87,9 @@ export const LuuTieuMucCu = async (
   }
 };
 
-export const LuuTieuMucMoi = async (data: any, sotieuchi: number) => {
+export const LuuTieuMucMoi = async (data: any, id_tieuchi: string) => {
   try {
-    await fetch(`http://172.16.0.60:83/api/danh_muc/${sotieuchi}/tieu_muc`, {
+    await fetch(`http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,12 +103,12 @@ export const LuuTieuMucMoi = async (data: any, sotieuchi: number) => {
 
 export const ThemTieuMucCon = async (
   data: any,
-  sotieuchi: number,
-  sotieumuc: string,
+  id_tieuchi: string | number,
+  id_tieumuc: string,
 ) => {
   try {
     await fetch(
-      `http://172.16.0.60:83/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con`,
+      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con`,
       {
         method: 'POST',
         headers: {
@@ -105,15 +122,10 @@ export const ThemTieuMucCon = async (
   }
 };
 
-export const LuuTieuMucConCu = async (
-  data: any,
-  sotieuchi: number,
-  sotieumuc: string,
-  sotieumuccon: string,
-) => {
+export const LuuTieuMucConCu = async (data: any, id_tieumuccon: string) => {
   try {
     await fetch(
-      `http://172.16.0.60:83/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con/${sotieumuccon}`,
+      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con/${sotieumuccon}`,
 
       {
         method: 'PUT',
@@ -130,12 +142,12 @@ export const LuuTieuMucConCu = async (
 
 export const LuuTieuMucConMoi = async (
   data: any,
-  sotieuchi: number,
-  sotieumuc: string,
+  id_tieuchi: string | number,
+  id_tieumuc: string,
 ) => {
   try {
     await fetch(
-      `http://172.16.0.60:83/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con`,
+      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con`,
       {
         method: 'POST',
         headers: {
@@ -152,7 +164,7 @@ export const LuuTieuMucConMoi = async (
 export const XoaTieuMuc = async (sotieuchi: number, sotieumuc: string) => {
   try {
     await fetch(
-      `http://172.16.0.60:83/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}`,
+      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}`,
       {
         method: 'DELETE',
       },
@@ -169,7 +181,7 @@ export const XoaTieuMucCon = async (
 ) => {
   try {
     await fetch(
-      `http://172.16.0.60:83/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con/${sotieumuccon}`,
+      `http://172.16.0.60:883/api/danh_muc/${sotieuchi}/tieu_muc/${sotieumuc}/tieu_muc_con/${sotieumuccon}`,
       {
         method: 'DELETE',
       },

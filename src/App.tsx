@@ -1,15 +1,46 @@
 import { useEffect, useState } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SignIn from './pages/Authentication/SignIn';
 import DefaultLayout from './layout/DefaultLayout';
 import ChiTieuCap1 from './pages/ChiTieu/ChiTieuCap1';
+import ChecklistTable from './pages/ChiTieu/ChecklistTable';
+import ChiTieuTheoKhoa from './pages/ChiTieu/ChiTieuTheoKhoa';
+import DanhGiaTieuChiKhoaPhong from './pages/ChiTieu/DanhGiaTieuChiKhoaPhong';
+import DanhSachDanhGiaCuaKhoa from './pages/ChiTieu/DanhSachDanhGiaCuaKhoa';
+import DetailsChiTieu from './pages/ChiTieu/DetailsChiTieu';
+import NotFound from './pages/NotFound/NotFound';
+import { message } from 'antd';
+import LichSuThaoTac from './pages/ChiTieu/LichSuThaoTac';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const { pathname } = useLocation();
+
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const [khoaPhong, setKhoaPhong] = useState('');
+
+  const navigate = useNavigate();
+
+  const [decodeWorkerDangNhap] = useState(
+    () => new Worker('./decodeWorkerDangNhap.js'),
+  );
+
+  const handleDecodeDangNhap = (encodedString: any) => {
+    return new Promise((resolve, reject) => {
+      if (decodeWorkerDangNhap) {
+        decodeWorkerDangNhap.postMessage(encodedString);
+        decodeWorkerDangNhap.onmessage = function (e) {
+          resolve(e.data);
+        };
+      } else {
+        console.log('Giải mã thông tin đăng nhập không thành công');
+      }
+    });
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -19,12 +50,35 @@ function App() {
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
+  useEffect(() => {
+    try {
+      const kiemTraDaDangNhaphayChua = async () => {
+        let token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/dang-nhap');
+        }
+        let decodeDangNhap: any = await handleDecodeDangNhap(token);
+        setKhoaPhong(decodeDangNhap?.khoaphong);
+      };
+      kiemTraDaDangNhaphayChua();
+    } catch (error) {
+      console.log(error);
+
+      messageApi.open({
+        type: 'error',
+        content: `Đã xảy ra lỗi trong quá trình kiểm tra đăng nhập`,
+      });
+    }
+  }, []);
+
   return loading ? (
     <Loader />
-  ) : (pathname === '/login') ?  <SignIn /> :(
+  ) : pathname === '/dang-nhap' ? (
+    <SignIn />
+  ) : (
     <DefaultLayout>
       <Routes>
-         {/* <Route
+        {/* <Route
           index
           element={
             <>
@@ -115,15 +169,96 @@ function App() {
           }
         /> */}
         <Route
-          path="/chi-tieu"
+          path="*"
           element={
             <>
-              <PageTitle title="Chỉ tiêu | NTP" />
-              <ChiTieuCap1/>
+              <PageTitle title="404 Not Found" />
+              <NotFound />
             </>
           }
         />
-         {/* <Route
+        <Route
+          path="/"
+          element={
+            <>
+              {khoaPhong === 'Phòng Quản Lý chất lượng' ? (
+                <>
+                  <PageTitle title="Quản lý tiêu chí | NTP" />
+                  <ChiTieuCap1 />
+                </>
+              ) : (
+                <>
+                  <PageTitle title="Danh sách tiêu chí | NTP" />
+                  <ChiTieuTheoKhoa />
+                </>
+              )}
+            </>
+          }
+        />
+        <Route
+          path="/lich-su-thao-tac"
+          element={
+            <>
+              <PageTitle title="Lịch sử thao tác | NTP" />
+              <LichSuThaoTac />
+            </>
+          }
+        />
+        <Route
+          path="/quan-ly-tieu-chi"
+          element={
+            <>
+              <PageTitle title="Quản lý tiêu chí | NTP" />
+              <ChiTieuCap1 />
+            </>
+          }
+        />
+        <Route
+          path="/phan-quyen-tieu-chi"
+          element={
+            <>
+              <PageTitle title="Phân quyền tiêu chí | NTP" />
+              <ChecklistTable />
+            </>
+          }
+        />
+        <Route
+          path="/danh-sach-tieu-chi"
+          element={
+            <>
+              <PageTitle title="Danh sách tiêu chí | NTP" />
+              <ChiTieuTheoKhoa />
+            </>
+          }
+        />
+        <Route
+          path="/danh-gia-tieu-chi"
+          element={
+            <>
+              <PageTitle title="Đánh giá tiêu chí khoa phòng | NTP" />
+              <DanhGiaTieuChiKhoaPhong />
+            </>
+          }
+        />
+        <Route
+          path="/danh-sach-dot-danh-gia-cua-cac-khoa"
+          element={
+            <>
+              <PageTitle title="Danh sách đợt đánh giá của các khoa | NTP" />
+              <DanhSachDanhGiaCuaKhoa />
+            </>
+          }
+        />
+        <Route
+          path="/chi-tiet-dot-danh-gia/:dotId"
+          element={
+            <>
+              <PageTitle title="Chi tiết đợt đánh giá | NTP" />
+              <DetailsChiTieu />
+            </>
+          }
+        />
+        {/* <Route
           path="/chi-tieu-cap-2"
           element={
             <>
