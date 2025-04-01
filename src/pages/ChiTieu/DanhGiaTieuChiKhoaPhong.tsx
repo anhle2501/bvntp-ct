@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import './ChiTieuCap1.css';
 import { List, message, Modal, Result } from 'antd';
 import {
   DeleteOutlined,
   DownloadOutlined,
   LoadingOutlined,
+  EditOutlined,
+  CommentOutlined,
 } from '@ant-design/icons';
 import { DanhMuc } from '../../types/danhmuc';
 import Select from 'react-select';
@@ -27,6 +29,8 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
   const [storedFiles, setStoredFiles] = useState<FilesByTieuMucCon>({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedTieuMucCon, setSelectedTieuMucCon] = useState<string>('');
+  const [isNoteModalVisible, setIsNoteModalVisible] = useState(false);
+  const [tempNote, setTempNote] = useState<string>('');
 
   const [selectedDot, setSelectedDot] = useState<string>('');
   const [evaluationScores, setEvaluationScores] = useState<
@@ -44,8 +48,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
   const [tenNhanVien, setTenNhanVien] = useState('');
 
   const [messageApi, contextHolder] = message.useMessage();
-
-  // const { khoaPhong, tenNhanVien } = useContext(UserContext);
 
   const [danhSachDot, setDanhSachDot] = useState<any[]>([]);
 
@@ -68,21 +70,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
   const [evaluatorNames, setEvaluatorNames] = useState<Record<string, string>>(
     {},
   );
-
-  // Add search functionality
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [filteredTieuChi, setFilteredTieuChi] = useState<DanhMuc[]>([]);
-
-  // Add state to track which items match the search
-  const [searchResults, setSearchResults] = useState<{
-    tieuChi: Record<string, boolean>;
-    tieuMuc: Record<string, boolean>;
-    tieuMucCon: Record<string, boolean>;
-  }>({
-    tieuChi: {},
-    tieuMuc: {},
-    tieuMucCon: {},
-  });
 
   const navigate = useNavigate();
 
@@ -110,109 +97,12 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
     }));
   };
 
-  // Add this effect to filter the data when searchTerm or danhSachTieuChiTheoKhoa changes
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      // Nếu không có từ khóa tìm kiếm, hiển thị tất cả
-      setFilteredTieuChi(danhSachTieuChiTheoKhoa);
-      setSearchResults({
-        tieuChi: {},
-        tieuMuc: {},
-        tieuMucCon: {},
-      });
-      return;
-    }
-
-    const lowercasedSearch = searchTerm.toLowerCase();
-    const matchedTieuChi: Record<string, boolean> = {};
-    const matchedTieuMuc: Record<string, boolean> = {};
-    const matchedTieuMucCon: Record<string, boolean> = {};
-
-    // Lọc tiêu chí phù hợp với từ khóa
-    const filtered = danhSachTieuChiTheoKhoa.filter((tieuChi) => {
-      let tieuChiMatches = false;
-      let anyMatch = false;
-
-      // Kiểm tra tiêu chí
-      if (
-        tieuChi.so_tieuchi.toString().includes(lowercasedSearch) ||
-        (tieuChi.ten_tieuchi &&
-          tieuChi.ten_tieuchi.toLowerCase().includes(lowercasedSearch)) ||
-        (tieuChi.mo_ta &&
-          tieuChi.mo_ta.toLowerCase().includes(lowercasedSearch))
-      ) {
-        matchedTieuChi[tieuChi.so_tieuchi] = true;
-        tieuChiMatches = true;
-        anyMatch = true;
-      }
-
-      // Kiểm tra tiểu mục
-      if (tieuChi.cac_tieu_muc && Array.isArray(tieuChi.cac_tieu_muc)) {
-        tieuChi.cac_tieu_muc.forEach((tieuMuc) => {
-          if (
-            tieuMuc.so_tieu_muc.toString().includes(lowercasedSearch) ||
-            (tieuMuc.ten_tieu_muc &&
-              tieuMuc.ten_tieu_muc.toLowerCase().includes(lowercasedSearch)) ||
-            (tieuMuc.mo_ta_tieu_muc &&
-              tieuMuc.mo_ta_tieu_muc.toLowerCase().includes(lowercasedSearch))
-          ) {
-            matchedTieuMuc[`${tieuChi.so_tieuchi}-${tieuMuc.so_tieu_muc}`] =
-              true;
-            anyMatch = true;
-          }
-
-          // Kiểm tra tiểu mục con
-          if (
-            tieuMuc.cac_tieu_muc_con &&
-            Array.isArray(tieuMuc.cac_tieu_muc_con)
-          ) {
-            tieuMuc.cac_tieu_muc_con.forEach((tieuMucCon) => {
-              if (
-                tieuMucCon.so_tieu_muc_con
-                  .toString()
-                  .includes(lowercasedSearch) ||
-                (tieuMucCon.ten_tieu_muc_con &&
-                  tieuMucCon.ten_tieu_muc_con
-                    .toLowerCase()
-                    .includes(lowercasedSearch)) ||
-                (tieuMucCon.mo_ta_tieu_muc_con &&
-                  tieuMucCon.mo_ta_tieu_muc_con
-                    .toLowerCase()
-                    .includes(lowercasedSearch))
-              ) {
-                matchedTieuMucCon[
-                  `${tieuChi.so_tieuchi}-${tieuMuc.so_tieu_muc}-${tieuMucCon.so_tieu_muc_con}`
-                ] = true;
-                anyMatch = true;
-              }
-            });
-          }
-        });
-      }
-
-      return anyMatch;
-    });
-
-    setFilteredTieuChi(filtered);
-    setSearchResults({
-      tieuChi: matchedTieuChi,
-      tieuMuc: matchedTieuMuc,
-      tieuMucCon: matchedTieuMucCon,
-    });
-  }, [searchTerm, danhSachTieuChiTheoKhoa]);
-
-  // Handler for search input changes
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
   const getFileCounts = async () => {
     try {
-      // Đặt lại fileCounts ngay từ đầu
       setFileCounts({});
 
       if (!selectedDot || !khoaPhong) {
-        return; // Không làm gì nếu chưa chọn đợt hoặc không có khoa phòng
+        return;
       }
 
       const [filesResponse, phanQuyenResponse, danhGiaResponse] =
@@ -240,7 +130,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       });
 
       if (!selectedEvaluation) {
-        console.log('Không tìm thấy đánh giá cho đợt này');
+        console.log('Không tìm thấy đánh giá cho đợt này và khoa phòng này');
         return;
       }
 
@@ -264,7 +154,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
       const counts: Record<string, number> = {};
 
-      // Kiểm tra xem có file nào không
       if (
         filesResponse.data &&
         Array.isArray(filesResponse.data) &&
@@ -280,14 +169,11 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         });
       }
 
-      // Cập nhật state
       setFileCounts(counts);
 
-      // Cập nhật localStorage nếu cần
       localStorage.setItem('fileCounts', JSON.stringify(counts));
     } catch (error) {
       console.error('Lỗi khi lấy số lượng file:', error);
-      // Đặt lại fileCounts nếu có lỗi
       setFileCounts({});
     }
   };
@@ -296,7 +182,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
     if (selectedDot && khoaPhong) {
       getFileCounts();
     } else {
-      // Đặt lại fileCounts khi không có đợt được chọn
       setFileCounts({});
     }
   }, [selectedDot, khoaPhong, status]);
@@ -335,36 +220,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
     }
   }, [khoaPhong, selectedDot]);
 
-  // const fetchDataTieuChiTheoKhoa = async () => {
-  //   try {
-  //     let response = await fetch('http://172.16.0.60:883/api/phan_quyen');
-  //     let data = await response.json();
-
-  //     if (data && Array.isArray(data)) {
-  //       setApiTimestamp(data[0]?.thoi_gian_ghi_nhan);
-  //       const latestPhanQuyen = data[0]?.phan_quyen;
-
-  //       const khoaData = latestPhanQuyen?.find(
-  //         (item: any) => item.ten_khoa === khoaPhong,
-  //       );
-
-  //       if (khoaData && Array.isArray(khoaData.danh_sach_tieu_chi)) {
-  //         setDanhSachTieuChiTheoKhoa(khoaData.danh_sach_tieu_chi);
-  //         setLoadingDanhMuc(false);
-  //       } else {
-  //         setDanhSachTieuChiTheoKhoa([]);
-  //         setLoadingDanhMuc(false);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     messageApi.open({
-  //       type: 'error',
-  //       content: `Đã có lỗi xảy ra trong quá trình hiển thị dữ liệu.`,
-  //     });
-  //   }
-  // };
-
   const fetchDataTieuChiTheoKhoa = async () => {
     try {
       let response = await fetch('http://172.16.0.60:83/api/phan_quyen');
@@ -380,11 +235,9 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
         if (khoaData && Array.isArray(khoaData.danh_sach_tieu_chi)) {
           setDanhSachTieuChiTheoKhoa(khoaData.danh_sach_tieu_chi);
-          setFilteredTieuChi(khoaData.danh_sach_tieu_chi); // Also set filtered data
           setLoadingDanhMuc(false);
         } else {
           setDanhSachTieuChiTheoKhoa([]);
-          setFilteredTieuChi([]);
           setLoadingDanhMuc(false);
         }
       }
@@ -443,10 +296,8 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
     try {
       const response = await axios.get('http://172.16.0.60:83/api/phan_quyen');
       if (response.data) {
-        // Filter and transform the data
         const dotTheoKhoa = response.data
           .filter((item: any) => {
-            // Find if any phan_quyen entry matches the khoaPhong
             return item.phan_quyen.some((pq: any) => pq.ten_khoa === khoaPhong);
           })
           .map((item: any) => ({
@@ -471,18 +322,15 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
     const newDot = selectedOption?.value || '';
     setSelectedDot(newDot);
 
-    // Đặt lại tất cả các state liên quan đến file ngay lập tức
     setFileCounts({});
     setStoredFiles({});
 
     if (newDot) {
       try {
-        // Lấy dữ liệu từ API phân quyền
         const phanQuyenResponse = await axios.get(
           'http://172.16.0.60:83/api/phan_quyen',
         );
 
-        // Lấy dữ liệu đánh giá
         const danhGiaResponse = await axios.get(
           'http://172.16.0.60:83/api/danh_gia_khoa',
         );
@@ -494,19 +342,16 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
           );
         });
 
-        // Tìm đợt đánh giá được chọn
         const selectedPhanQuyen = phanQuyenResponse.data.find(
           (pq: any) => formatDate(pq.thoi_gian_ghi_nhan) === newDot,
         );
 
         if (selectedPhanQuyen) {
-          // Tìm khoa phòng tương ứng
           const khoaPhongData = selectedPhanQuyen.phan_quyen.find(
             (pq: any) => pq.ten_khoa === khoaPhong,
           );
 
           if (khoaPhongData) {
-            // Cập nhật danh sách tiêu chí
             setDanhSachTieuChiTheoKhoa(khoaPhongData.danh_sach_tieu_chi);
           }
         }
@@ -517,33 +362,25 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         const evaluators: Record<string, string> = {};
 
         if (selectedEvaluation) {
-          // Đợt đánh giá đã tồn tại
           setEvaluationExists(true);
 
-          // Lấy danh sách file đã tải lên cho đợt đánh giá này
           const filesResponse = await axios.get(
             'http://172.16.0.60:83/api/list_files',
           );
 
-          // Lọc file theo đợt đánh giá một cách chính xác
           const filesForThisEvaluation = filesResponse.data.filter(
             (file: any) => file.id_dot_danh_gia === selectedEvaluation._id,
           );
 
-          // Tạo đối tượng đếm số lượng file cho mỗi tiểu mục con
           const counts: Record<string, number> = {};
 
-          // Tạo đối tượng lưu trữ thông tin file theo tiểu mục con
           const filesByTieuMucCon: FilesByTieuMucCon = {};
 
-          // Chỉ xử lý nếu có file
           if (filesForThisEvaluation && filesForThisEvaluation.length > 0) {
             filesForThisEvaluation.forEach((file: any) => {
-              // Đếm số lượng file
               counts[file.id_tieumuccon] =
                 (counts[file.id_tieumuccon] || 0) + 1;
 
-              // Lưu thông tin file
               if (!filesByTieuMucCon[file.id_tieumuccon]) {
                 filesByTieuMucCon[file.id_tieumuccon] = [];
               }
@@ -556,11 +393,9 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
             });
           }
 
-          // Cập nhật state
           setFileCounts(counts);
           setStoredFiles(filesByTieuMucCon);
 
-          // Xử lý dữ liệu đánh giá
           selectedEvaluation.danh_sach_danh_gia.forEach((danhGia: any) => {
             danhGia.tieu_muc.forEach((tieuMuc: any) => {
               if (tieuMuc.ghichu_danhgia) {
@@ -597,7 +432,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
             });
           });
         } else {
-          // Đợt đánh giá chưa tồn tại, đặt lại tất cả các giá trị
           setEvaluationExists(false);
         }
 
@@ -606,7 +440,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         setEvaluationScores(scores);
         setEvaluationNotes(notes);
 
-        // Xóa dữ liệu file trong localStorage để tránh xung đột
         localStorage.removeItem('storedFiles');
         localStorage.removeItem('uploadedFiles');
       } catch (error) {
@@ -641,7 +474,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
   const printReport = async () => {
     try {
-      // Fetch evaluation data
       const response = await DanhSachDanhGia();
 
       const selectedEvaluation = response.find((danhGia: any) => {
@@ -654,15 +486,12 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         return;
       }
 
-      // Calculate statistics at the tiêu chí level
       let totalCriteria = 0;
       let passedCriteria = 0;
 
-      // Prepare data for tiêu chí evaluation
       const tieuChiEvaluations = danhSachTieuChiTheoKhoa.map((tieuChi) => {
         totalCriteria++;
 
-        // Check if all tiểu mục con in this tiêu chí are passed
         let allTieuMucConPassed = true;
         let totalTieuMucCon = 0;
         let passedTieuMucCon = 0;
@@ -682,7 +511,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
           }
         });
 
-        // If all tiểu mục con are passed, the tiêu chí is passed
         if (allTieuMucConPassed && totalTieuMucCon > 0) {
           passedCriteria++;
         }
@@ -703,7 +531,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         totalCriteria > 0 ? (passedCriteria / totalCriteria) * 100 : 0;
       const completionRateFormatted = completionRate.toFixed(1);
 
-      // Generate table rows for tiêu chí details only
       let tableRows = '';
 
       tieuChiEvaluations.forEach((tieuChi) => {
@@ -711,16 +538,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         const statusBadge = isPass
           ? `<span class="status-badge passed-badge"><i class="fas fa-check"></i> Đạt</span>`
           : `<span class="status-badge failed-badge"><i class="fas fa-times"></i> Không đạt</span>`;
-
-        // Calculate completion rate for this tiêu chí
-        // const tieuChiCompletionRate =
-        //   tieuChi.totalTieuMucCon > 0
-        //     ? Math.round(
-        //         (tieuChi.passedTieuMucCon / tieuChi.totalTieuMucCon) * 100,
-        //       )
-        //     : 0;
-
-        // const attachmentInfo = `<i class="fas fa-tasks"></i> ${tieuChi.passedTieuMucCon}/${tieuChi.totalTieuMucCon} tiểu mục con (${tieuChiCompletionRate}%)`;
 
         tableRows += `
           <tr>
@@ -735,13 +552,11 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         `;
       });
 
-      // Generate recommendations based on failed criteria
       let recommendations = '';
       if (failedCriteria > 0) {
         recommendations =
           '<p><i class="fas fa-exclamation-circle"></i> Cần cải thiện các tiêu chí chưa đạt.</p>';
 
-        // Add specific recommendations for failed criteria
         tieuChiEvaluations.forEach((tieuChi) => {
           if (!tieuChi.isPassed) {
             recommendations += `<p><i class="fas fa-wrench"></i> TC-${tieuChi.so_tieuchi}: Cần hoàn thiện các tiểu mục con trong tiêu chí "${tieuChi.ten_tieuchi}"</p>`;
@@ -752,18 +567,16 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
           '<p><i class="fas fa-check-circle"></i> Tất cả tiêu chí đều đạt yêu cầu. Tiếp tục duy trì chất lượng.</p>';
       }
 
-      // Get date range from selectedDot with time information
       const dateParts = selectedDot.split(' ')[0].split('/');
       const timeParts = selectedDot.split(' ')[1].split(':');
 
-      // Create date object with full date and time information
       const dateObj = new Date(
-        parseInt(dateParts[2]), // year
-        parseInt(dateParts[1]) - 1, // month (0-based)
-        parseInt(dateParts[0]), // day
-        parseInt(timeParts[0]), // hours
-        parseInt(timeParts[1]), // minutes
-        parseInt(timeParts[2]), // seconds
+        parseInt(dateParts[2]),
+        parseInt(dateParts[1]) - 1,
+        parseInt(dateParts[0]),
+        parseInt(timeParts[0]),
+        parseInt(timeParts[1]),
+        parseInt(timeParts[2]),
       );
 
       const endDate = new Date(dateObj);
@@ -959,12 +772,12 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
               <table>
                   <thead>
                       <tr>
-                          <th>Tiêu chí</th>
-                          <th>Nội dung</th>
-                          <th>Trạng thái</th>
-                          
-                      </tr>
-                  </thead>
+                         <th>Tiêu chí</th>
+                         <th>Nội dung</th>
+                         <th>Trạng thái</th>
+
+                    </tr>
+               </thead>
                   <tbody>
                       ${tableRows}
                   </tbody>
@@ -981,7 +794,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         printWindow.document.write(printContent);
         printWindow.document.close();
 
-        // Wait for resources to load before printing
         setTimeout(() => {
           printWindow.print();
         }, 1000);
@@ -997,22 +809,19 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
   };
 
   function convertToGMTString(dateStr: string) {
-    // Split date and time
     const [datePart, timePart] = dateStr.split(' ');
     const [day, month, year] = datePart.split('/');
     const [hours, minutes, seconds] = timePart.split(':');
 
-    // Create Date object
     const date = new Date(
       Number(year),
-      Number(month) - 1, // Month is 0-based
+      Number(month) - 1,
       Number(day),
       Number(hours),
       Number(minutes),
       Number(seconds),
     );
 
-    // Convert to GMT string
     return date.toUTCString();
   }
 
@@ -1025,8 +834,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
   const luuChoDanhGiaMoi = async () => {
     try {
-      // const apiDate = new Date(apiTimestamp);
-
       const evaluationData = {
         danh_sach_danh_gia: danhSachTieuChiTheoKhoa.map((tieuChi) => ({
           id_tieuchi: tieuChi.id_tieuchi,
@@ -1076,26 +883,25 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
               };
             }),
         })),
-
         ten_khoa: khoaPhong,
         nhan_vien: `${tenNhanVien}-${convertToGMTString(selectedDot)}`,
       };
 
+      // Thực hiện tạo đánh giá mới trước
       const response = await axios.post(
         'http://172.16.0.60:83/api/danh_gia_khoa',
         evaluationData,
       );
 
-      // Get the ID of the newly created evaluation
       const newEvaluationId = response.data._id;
 
-      // Log each tiêu chí and tiêu mục evaluation
+      // Sau khi tạo đánh giá thành công, thực hiện ghi log cho từng tiêu mục
       const logPromises = danhSachTieuChiTheoKhoa.flatMap((tieuChi) =>
         tieuChi.cac_tieu_muc
           .filter((tm) => tm.hidden === 0)
           .filter((tm) => tm.cac_tieu_muc_con && tm.cac_tieu_muc_con.length > 0)
-          .map((tieuMuc) => {
-            return axios.post('http://172.16.0.60:83/api/log_danh_gia', {
+          .map(async (tieuMuc) => {
+            await axios.post('http://172.16.0.60:83/api/log_danh_gia', {
               hanh_dong: 'danh_gia',
               id_danh_gia: newEvaluationId,
               id_tieuchi: tieuChi.id_tieuchi,
@@ -1109,10 +915,8 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       );
 
       await Promise.all(logPromises);
-
       setStatus(randomString());
-
-      messageApi.success('Thêm đánh giá cho đợt mới thành công');
+      messageApi.success('Thêm mới đánh giá thành công');
     } catch (error) {
       console.error(error);
       messageApi.error('Đã có lỗi xảy ra khi lưu đánh giá');
@@ -1124,7 +928,10 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       const evaluationsResponse = await DanhSachDanhGia();
       const selectedEvaluation = evaluationsResponse.find((evaluation: any) => {
         const timestamp = evaluation.nhan_vien.split('-')[1]?.trim();
-        return formatDate(timestamp) === selectedDot;
+        return (
+          formatDate(timestamp) === selectedDot &&
+          evaluation.ten_khoa === khoaPhong
+        );
       });
 
       if (!selectedEvaluation) {
@@ -1132,92 +939,69 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         return;
       }
 
-      const updatePromises = danhSachTieuChiTheoKhoa
-        .flatMap((tieuChi) =>
-          tieuChi.cac_tieu_muc
-            .filter((tm) => tm.hidden === 0)
-            .filter(
-              (tm) => tm.cac_tieu_muc_con && tm.cac_tieu_muc_con.length > 0,
-            )
-            .map((tieuMuc) => {
-              const allTieuMucConDat = tieuMuc.cac_tieu_muc_con
-                ?.filter((tmc) => tmc.hidden === 0)
-                ?.every((tmc) => evaluationScores[tmc.id_tieumuccon] === 1);
+      const updatePromises = danhSachTieuChiTheoKhoa.flatMap((tieuChi) =>
+        tieuChi.cac_tieu_muc
+          .filter((tm) => tm.hidden === 0)
+          .filter((tm) => tm.cac_tieu_muc_con && tm.cac_tieu_muc_con.length > 0)
+          .map(async (tieuMuc) => {
+            const allTieuMucConDat = tieuMuc.cac_tieu_muc_con
+              ?.filter((tmc) => tmc.hidden === 0)
+              ?.every((tmc) => evaluationScores[tmc.id_tieumuccon] === 1);
 
-              const danhGiaTieuMucConString = tieuMuc.cac_tieu_muc_con
-                ?.filter((tmc: any) => tmc.hidden === 0)
-                ?.map(
-                  (tmc: any) =>
-                    `${tmc.id_tieumuccon}:${
-                      evaluationScores[tmc.id_tieumuccon] || 0
-                    }`,
-                )
-                .join(',');
+            const danhGiaTieuMucConString = tieuMuc.cac_tieu_muc_con
+              ?.filter((tmc: any) => tmc.hidden === 0)
+              ?.map(
+                (tmc: any) =>
+                  `${tmc.id_tieumuccon}:${
+                    evaluationScores[tmc.id_tieumuccon] || 0
+                  }`,
+              )
+              .join(',');
 
-              const danhGiaVaGhiChuString = tieuMuc.cac_tieu_muc_con
-                ?.filter((tmc: any) => tmc.hidden === 0)
-                ?.map((tmc: any) => {
-                  const ghiChu = evaluationNotes[tmc.id_tieumuccon] || 'none';
-                  return `${tmc.id_tieumuccon}:${ghiChu}`;
-                })
-                .join(',');
+            const danhGiaVaGhiChuString = tieuMuc.cac_tieu_muc_con
+              ?.filter((tmc: any) => tmc.hidden === 0)
+              ?.map((tmc: any) => {
+                const ghiChu = evaluationNotes[tmc.id_tieumuccon] || 'none';
+                return `${tmc.id_tieumuccon}:${ghiChu}`;
+              })
+              .join(',');
 
-              const evaluatorNamesString = tieuMuc.cac_tieu_muc_con
-                ?.filter((tmc: any) => tmc.hidden === 0)
-                ?.map((tmc: any) => {
-                  const evaluatorName =
-                    evaluatorNames[tmc.id_tieumuccon] || 'none';
-                  return `${tmc.id_tieumuccon}:${evaluatorName}`;
-                })
-                .join(',');
+            const evaluatorNamesString = tieuMuc.cac_tieu_muc_con
+              ?.filter((tmc: any) => tmc.hidden === 0)
+              ?.map((tmc: any) => {
+                const evaluatorName =
+                  evaluatorNames[tmc.id_tieumuccon] || 'none';
+                return `${tmc.id_tieumuccon}:${evaluatorName}`;
+              })
+              .join(',');
 
-              // return axios.put(
-              //   'http://172.16.0.60:883/api/cap_nhat_danh_gia_tieu_muc',
-              //   {
-              //     id_danh_gia: selectedEvaluation._id,
-              //     id_tieuchi: tieuChi.id_tieuchi,
-              //     id_tieumuc: tieuMuc.id_tieumuc,
-              //     danh_gia: allTieuMucConDat ? 1 : 0,
-              //     ghichu_danhgia: danhGiaTieuMucConString,
-              //     mota_danhgia: danhGiaVaGhiChuString,
-              //     // nguoi_danhgia: evaluatorNamesString,
-              //   },
-              // );
+            // Thực hiện updatePromise trước
+            await axios.put(
+              'http://172.16.0.60:83/api/cap_nhat_danh_gia_tieu_muc',
+              {
+                id_danh_gia: selectedEvaluation._id,
+                id_tieuchi: tieuChi.id_tieuchi,
+                id_tieumuc: tieuMuc.id_tieumuc,
+                danh_gia: allTieuMucConDat ? 1 : 0,
+                ghichu_danhgia: danhGiaTieuMucConString,
+                mota_danhgia: danhGiaVaGhiChuString,
+                // nguoi_danhgia: evaluatorNamesString,
+              },
+            );
 
-              // Create update promise for evaluation
-              const updatePromise = axios.put(
-                'http://172.16.0.60:83/api/cap_nhat_danh_gia_tieu_muc',
-                {
-                  id_danh_gia: selectedEvaluation._id,
-                  id_tieuchi: tieuChi.id_tieuchi,
-                  id_tieumuc: tieuMuc.id_tieumuc,
-                  danh_gia: allTieuMucConDat ? 1 : 0,
-                  ghichu_danhgia: danhGiaTieuMucConString,
-                  mota_danhgia: danhGiaVaGhiChuString,
-                  // nguoi_danhgia: evaluatorNamesString,
-                },
-              );
-
-              // Create log promise
-              const logPromise = axios.post(
-                'http://172.16.0.60:83/api/log_danh_gia',
-                {
-                  hanh_dong: 'danh_gia',
-                  id_danh_gia: selectedEvaluation._id,
-                  id_tieuchi: tieuChi.id_tieuchi,
-                  id_tieumuc: tieuMuc.id_tieumuc,
-                  nguoi_thuc_hien: tenNhanVien,
-                  ten_khoa: khoaPhong,
-                  ten_tieuchi: tieuChi.ten_tieuchi,
-                  ten_tieumuc: tieuMuc.ten_tieu_muc,
-                },
-              );
-
-              // Return both promises
-              return [updatePromise, logPromise];
-            }),
-        )
-        .flat();
+            // Sau khi updatePromise hoàn thành, thực hiện logPromise
+            await axios.post('http://172.16.0.60:83/api/log_danh_gia', {
+              hanh_dong: 'danh_gia',
+              id_danh_gia: selectedEvaluation._id,
+              id_tieuchi: tieuChi.id_tieuchi,
+              id_tieumuc: tieuMuc.id_tieumuc,
+              nguoi_thuc_hien: tenNhanVien,
+              ten_khoa: khoaPhong,
+              ten_tieuchi: tieuChi.ten_tieuchi,
+              ten_tieumuc: tieuMuc.ten_tieu_muc,
+            });
+          }),
+      );
 
       await Promise.all(updatePromises);
       setStatus(randomString());
@@ -1265,37 +1049,38 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         'http://172.16.0.60:83/api/list_files',
       );
 
-      // const phanQuyenResponse = await axios.get(
-      //   'http://172.16.0.60:883/api/phan_quyen',
-      // );
-
       const danhGiaResponse = await axios.get(
         'http://172.16.0.60:83/api/danh_gia_khoa',
       );
 
-      // const selectedPhanQuyen = phanQuyenResponse.data.find(
-      //   (pq: any) => formatDate(pq.thoi_gian_ghi_nhan) === selectedDot,
-      // );
-
       const selectedEvaluation = danhGiaResponse.data.find((danhGia: any) => {
         const timestamp = danhGia.nhan_vien.split('-')[1]?.trim();
-        return formatDate(timestamp) === selectedDot;
+        return (
+          formatDate(timestamp) === selectedDot &&
+          danhGia.ten_khoa === khoaPhong
+        );
       });
+
+      if (!selectedEvaluation) {
+        messageApi.error('Không tìm thấy đợt đánh giá hiện tại');
+        e.target.value = '';
+        return;
+      }
 
       const id_dot_danh_gia = selectedEvaluation._id;
 
-      const existingFiles = existingFilesResponse.data.filter(
-        (file: any) => file.id_tieumuccon === id_tieumuccon,
+      const departmentFiles = existingFilesResponse.data.filter(
+        (file: any) => file.id_dot_danh_gia === id_dot_danh_gia,
       );
 
       for (let i = 0; i < files.length; i++) {
-        const isDuplicate = existingFiles.some(
+        const isDuplicate = departmentFiles.some(
           (existingFile: any) => existingFile.filename === files[i].name,
         );
 
         if (isDuplicate) {
           messageApi.warning(
-            `File "${files[i].name}" đã được tải lên trong tiểu mục con này`,
+            `File "${files[i].name}" đã được tải lên trong đợt đánh giá này của khoa phòng ${khoaPhong}`,
           );
           e.target.value = '';
           return;
@@ -1369,7 +1154,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       });
 
       if (!selectedEvaluation) {
-        // messageApi.info('Không có dữ liệu đánh giá cho đợt này');
         setStoredFiles({});
         setSelectedTieuMucCon('');
         setIsModalVisible(true);
@@ -1379,6 +1163,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       const id_dot_danh_gia = selectedEvaluation._id;
 
       const response = await axios.get('http://172.16.0.60:83/api/list_files');
+
       const filteredFiles = response.data.filter(
         (file: any) =>
           file.id_dot_danh_gia === id_dot_danh_gia &&
@@ -1386,7 +1171,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       );
 
       if (filteredFiles.length === 0) {
-        messageApi.info('Không có file nào được tải lên cho tiểu mục con này');
         setStoredFiles({
           [id_tieumuccon]: [],
         });
@@ -1406,6 +1190,29 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       console.error(error);
       messageApi.error('Lỗi khi tải danh sách file');
     }
+  };
+
+  const handleNoteClick = (id_tieumuccon: string) => {
+    setSelectedTieuMucCon(id_tieumuccon);
+    setTempNote(evaluationNotes[id_tieumuccon] || '');
+    setIsNoteModalVisible(true);
+    setTimeout(() => {
+      const textarea = document.querySelector(
+        '.note-textarea',
+      ) as HTMLTextAreaElement;
+      if (textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+      }
+    }, 100);
+  };
+
+  const handleSaveNote = () => {
+    setEvaluationNotes((prev) => ({
+      ...prev,
+      [selectedTieuMucCon]: tempNote,
+    }));
+    setIsNoteModalVisible(false);
   };
 
   return (
@@ -1438,24 +1245,6 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                 onChange={handleDotChange}
                 className="w-full sm:w-1/2 mb-4"
               />
-              {/* Add search input */}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm tiêu chí, tiểu mục, tiểu mục con..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="w-full sm:w-1/2 p-2 border rounded"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="bg-primary h-full px-3 pt-3 pb-3 text-white sm:right-1/2 sm:mr-8"
-                  >
-                    Đặt lại
-                  </button>
-                )}
-              </div>
             </div>
             <br />
 
@@ -1487,902 +1276,386 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                 </div>
 
                 <br />
-                <h1 className="font-bold mb-4">Danh mục của {khoaPhong}</h1>
-                <div id="form-container">
-                  <div id="levels-container">
-                    {/* {loadingDanhMuc === false ? (
-                      <>
-                        {danhSachTieuChiTheoKhoa &&
-                        Array.isArray(danhSachTieuChiTheoKhoa) &&
-                        danhSachTieuChiTheoKhoa.length > 0 ? (
-                          danhSachTieuChiTheoKhoa
+
+                <div className="overflow-auto" style={{ maxWidth: '100%' }}>
+                  <table
+                    className="w-full border-collapse border"
+                    style={{ tableLayout: 'fixed', minWidth: '768px' }}
+                  >
+                    <thead>
+                      <tr className="bg-gray-900 text-white">
+                        <th
+                          className="border p-3 text-center font-semibold bg-purple-800"
+                          style={{
+                            width: '65%',
+                            wordWrap: 'break-word',
+                            overflow: 'visible',
+                            whiteSpace: 'normal',
+                          }}
+                        >
+                          Nội dung
+                        </th>
+                        <th
+                          className="border p-3 text-center font-semibold bg-yellow-800"
+                          style={{ width: '6%' }}
+                        >
+                          Mức
+                        </th>
+                        <th
+                          className="border p-3 text-center font-semibold bg-green-800"
+                          style={{ width: '6%' }}
+                        >
+                          Đạt
+                        </th>
+                        <th
+                          className="border p-3 text-center font-semibold bg-red-800"
+                          style={{
+                            width: '6%',
+                            wordWrap: 'break-word',
+                            overflow: 'visible',
+                            whiteSpace: 'normal',
+                            maxWidth: '0',
+                          }}
+                        >
+                          Không đạt
+                        </th>
+                        <th
+                          className="border p-2 text-center font-semibold bg-blue-800"
+                          style={{ width: '17%' }}
+                        >
+                          Hành động
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {danhSachTieuChiTheoKhoa &&
+                      Array.isArray(danhSachTieuChiTheoKhoa) &&
+                      danhSachTieuChiTheoKhoa.length > 0 ? (
+                        <>
+                          {danhSachTieuChiTheoKhoa
                             .filter((tc) => tc.hidden === 0)
-                            .map((existingData) => {
-                              const level1Id = existingData.so_tieuchi;
+                            .map((tieuChi) => (
+                              <Fragment key={tieuChi.id_tieuchi}>
+                                <tr className="bg-blue-700 text-white hover:bg-blue-800">
+                                  <td
+                                    className="border p-3 font-medium"
+                                    style={{
+                                      wordWrap: 'break-word',
+                                      overflow: 'visible',
+                                      whiteSpace: 'normal',
+                                      maxWidth: '0',
+                                    }}
+                                    colSpan={5}
+                                  >
+                                    {tieuChi.ten_tieuchi}{' '}
+                                    {tieuChi.mo_ta ? ` - ${tieuChi.mo_ta}` : ''}
+                                  </td>
+                                </tr>
 
-                              return (
-                                <div
-                                  key={`level-1-${level1Id}`}
-                                  className="level"
-                                  id={`level-1-${level1Id}`}
-                                >
-                                  <h3 className="text-danger font-bold">
-                                    Tiêu chí - {level1Id}
-                                  </h3>
-                                 
-
-                                  <div className="flex flex-col sm:flex-row gap-2 mb-4">
-                                    <input
-                                      className="h-10 w-full sm:w-2/12 p-2 border rounded"
-                                      type="text"
-                                      placeholder="Số"
-                                      value={level1Id}
-                                      readOnly
-                                    />
-
-                                    <input
-                                      type="text"
-                                      className="h-10 w-full sm:w-2/12 p-2 border rounded"
-                                      placeholder="Tên Tiêu chí"
-                                      id={`ten-tieuchi-cap1-${level1Id}`}
-                                      defaultValue={
-                                        existingData?.ten_tieuchi || ''
-                                      }
-                                      readOnly
-                                    />
-                                    <textarea
-                                      id={`noidung-tieuchi-cap1-${level1Id}`}
-                                      className="w-full sm:w-9/12 p-2 border rounded"
-                                      defaultValue={existingData?.mo_ta || ''}
-                                      rows={2}
-                                     
-                                      placeholder="Nội dung Tiêu chí"
-                                      readOnly
-                                    ></textarea>
-                                  </div>
-
-                                  {existingData?.cac_tieu_muc &&
-                                    Array.isArray(existingData?.cac_tieu_muc) &&
-                                    existingData?.cac_tieu_muc
-                                      .filter((item) => item.hidden === 0)
-                                      .map((item, level2Index) => {
-                                        const level2Id = level2Index + 1;
-
-                                        const existingDataTieuMuc =
-                                          existingData?.cac_tieu_muc.find(
-                                            (tc) =>
-                                              tc.so_tieu_muc ===
-                                                item?.so_tieu_muc &&
-                                              tc.hidden === 0,
-                                          );
-
-                                        return (
-                                          <>
-                                            <div
-                                              key={`${level1Id}-${level2Id}`}
-                                              className="level"
-                                              id={`level-2-${level1Id}-${level2Id}`}
+                                {tieuChi.cac_tieu_muc &&
+                                  Array.isArray(tieuChi.cac_tieu_muc) &&
+                                  tieuChi.cac_tieu_muc
+                                    .filter((tm) => tm.hidden === 0)
+                                    .map((tieuMuc) => (
+                                      <Fragment key={tieuMuc.id_tieumuc}>
+                                        {tieuMuc.ten_tieu_muc && (
+                                          <tr className="bg-indigo-600 text-white hover:bg-indigo-700">
+                                            <td
+                                              className="border p-3 pl-8"
+                                              style={{
+                                                wordWrap: 'break-word',
+                                                overflow: 'visible',
+                                                whiteSpace: 'normal',
+                                                maxWidth: '0',
+                                              }}
+                                              colSpan={5}
                                             >
-                                              <h3 className="text-primary font-bold">
-                                                Tiểu mục - {item?.so_tieu_muc}
-                                              </h3>
-                                            
-                                              <div className="flex flex-col sm:flex-row gap-2 mb-4">
-                                                <input
-                                                  type="text"
-                                                  className="h-10 w-full sm:w-1/12 p-2 border rounded"
-                                                  placeholder="Số"
-                                                  value={`${item?.so_tieu_muc}`}
-                                                  readOnly
-                                                />
-                                                <input
-                                                  type="text"
-                                                  className="h-10 w-full sm:w-2/12 p-2 border rounded"
-                                                  placeholder="Tên Tiểu mục"
-                                                  defaultValue={
-                                                    item?.ten_tieu_muc || ''
-                                                  }
-                                                  id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                                  readOnly
-                                                />
+                                              {tieuMuc.ten_tieu_muc}{' '}
+                                              {tieuMuc.mo_ta_tieu_muc
+                                                ? `- ${tieuMuc.mo_ta_tieu_muc}`
+                                                : ''}
+                                            </td>
+                                          </tr>
+                                        )}
 
-                                                <textarea
-                                                  className="w-full sm:w-9/12 p-2 border rounded"
-                                                  id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                                  defaultValue={
-                                                    item?.mo_ta_tieu_muc || ''
-                                                  }
-                                                  rows={2}
-                                               
-                                                  placeholder="Nội dung Tiểu mục"
-                                                  readOnly
-                                                ></textarea>
-                                              </div>
-
-                                              {existingDataTieuMuc?.cac_tieu_muc_con &&
-                                                Array.isArray(
-                                                  existingDataTieuMuc?.cac_tieu_muc_con,
-                                                ) &&
-                                                existingDataTieuMuc?.cac_tieu_muc_con
-                                                  .filter(
-                                                    (item) => item.hidden === 0,
-                                                  )
-                                                  .map((item, level3Index) => {
-                                                    const level3Id =
-                                                      level3Index + 1;
-
-                                                    return (
-                                                      <div
-                                                        key={`${level1Id}-${level2Id}-${level3Id}`}
-                                                        data-so-tieu-muc-con={
-                                                          item?.so_tieu_muc_con
-                                                        }
-                                                        className="level"
-                                                        id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
-                                                      >
-                                                        <h3 className="text-success font-bold">
-                                                          Tiểu mục con -{' '}
-                                                          {
-                                                            item?.so_tieu_muc_con
-                                                          }
-                                                        </h3>
-                                                       
-                                                        <div
-                                                        
-                                                          className="input-group flex flex-col sm:flex-row gap-2"
-                                                          key={
-                                                            item?.so_tieu_muc_con
-                                                          }
-                                                        >
-                                                          <input
-                                                            type="text"
-                                                            className="h-10 w-full sm:w-1/12 p-2 rounded"
-                                                            placeholder="Số"
-                                                            value={`${item?.so_tieu_muc_con}`}
-                                                            readOnly
-                                                          />
-                                                          <input
-                                                            type="text"
-                                                            className="h-10 w-full sm:w-2/12 p-2 rounded"
-                                                            placeholder="Tên Tiểu mục con"
-                                                            id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                            defaultValue={
-                                                              item?.ten_tieu_muc_con
-                                                                ? item?.ten_tieu_muc_con
-                                                                : ''
-                                                            }
-                                                            readOnly
-                                                          />
-                                                          <input
-                                                            //className="mr-1 w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-5 text-black active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                                            className="h-10 w-full sm:w-1/12 p-2 border rounded"
-                                                            type="number"
-                                                            min={1}
-                                                            placeholder="Mức"
-                                                            id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                            defaultValue={
-                                                              item?.muc
-                                                                ? item?.muc
-                                                                : ''
-                                                            }
-                                                            onInput={(
-                                                              e: any,
-                                                            ) => {
-                                                              if (
-                                                                e.target
-                                                                  .value <= 1
-                                                              )
-                                                                e.target.value = 1;
-                                                            }}
-                                                            readOnly
-                                                          />
-                                                          <textarea
-                                                            id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                            className="w-full sm:w-9/12 p-2 border rounded"
-                                                            defaultValue={
-                                                              item?.mo_ta_tieu_muc_con
-                                                                ? item?.mo_ta_tieu_muc_con
-                                                                : ''
-                                                            }
-                                                            rows={2}
-                                                          
-                                                            placeholder="Nội dung Tiểu mục con"
-                                                            readOnly
-                                                          ></textarea>
-                                                        </div>
-
-                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-3">
-                                                          <div className="flex items-center">
-                                                            <input
-                                                              title={
-                                                                isEvaluationLocked
-                                                                  ? `Không thể chọn do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
-                                                                  : `Chọn đánh giá`
-                                                              }
-                                                              type="checkbox"
-                                                              checked={
-                                                                evaluationScores[
-                                                                  item
-                                                                    .id_tieumuccon
-                                                                ] === 1
-                                                              }
-                                                              onChange={(e) => {
-                                                                if (
-                                                                  e.target
-                                                                    .checked
-                                                                ) {
-                                                                  handleEvaluationChange(
-                                                                    item.id_tieumuccon,
-                                                                    1,
-                                                                  );
-                                                                }
-                                                              }}
-                                                              disabled={
-                                                                isEvaluationLocked
-                                                              }
-                                                              className={`h-5 w-5 ml-2 ${
-                                                                isEvaluationLocked
-                                                                  ? 'cursor-not-allowed'
-                                                                  : 'cursor-pointer'
-                                                              } rounded border-[1.5px] border-stroke bg-transparent accent-primary`}
-                                                            />
-                                                            <label className="ml-2 text-black text-sm sm:text-base">
-                                                              Đạt
-                                                            </label>
-                                                          </div>
-                                                          <div className="flex items-center">
-                                                            <input
-                                                              title={
-                                                                isEvaluationLocked
-                                                                  ? `Không thể chọn do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
-                                                                  : `Chọn đánh giá`
-                                                              }
-                                                              type="checkbox"
-                                                              checked={
-                                                                evaluationScores[
-                                                                  item
-                                                                    .id_tieumuccon
-                                                                ] === 0
-                                                              }
-                                                              onChange={(e) => {
-                                                                if (
-                                                                  e.target
-                                                                    .checked
-                                                                ) {
-                                                                  handleEvaluationChange(
-                                                                    item.id_tieumuccon,
-                                                                    0,
-                                                                  );
-                                                                }
-                                                              }}
-                                                              disabled={
-                                                                isEvaluationLocked
-                                                              }
-                                                              className={`h-5 w-5 ml-2 ${
-                                                                isEvaluationLocked
-                                                                  ? 'cursor-not-allowed'
-                                                                  : 'cursor-pointer'
-                                                              } rounded border-[1.5px] border-stroke bg-transparent accent-primary`}
-                                                            />
-                                                            <label className="ml-2 text-black text-sm sm:text-base">
-                                                              Không đạt
-                                                            </label>
-                                                          </div>
-                                                        </div>
-                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-3">
-                                                          <div className="w-full">
-                                                            <textarea
-                                                              rows={2}
-                                                              placeholder="Nhập ghi chú đánh giá..."
-                                                              className="w-full p-2 border rounded"
-                                                              value={
-                                                                evaluationNotes[
-                                                                  item
-                                                                    .id_tieumuccon
-                                                                ] || ''
-                                                              }
-                                                              onChange={(e) =>
-                                                                handleNoteChange(
-                                                                  item.id_tieumuccon,
-                                                                  e.target
-                                                                    .value,
-                                                                )
-                                                              }
-                                                              disabled={
-                                                                isEvaluationLocked
-                                                              }
-                                                            ></textarea>
-                                                          </div>
-                                                        </div>
-
-                                                        
-
-                                                        <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                                                          <div className="flex items-center">
-                                                            <input
-                                                              type="file"
-                                                              id={`file-${item.id_tieumuccon}`}
-                                                              onChange={(e) =>
-                                                                handleFileUpload(
-                                                                  e,
-                                                                  item?.id_tieumuccon,
-                                                                )
-                                                              }
-                                                              className="hidden"
-                                                              multiple
-                                                              accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                                            />
-                                                            <button
-                                                              title={
-                                                                isEvaluationLocked
-                                                                  ? `Không thể tải file do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
-                                                                  : `Đính kèm file`
-                                                              }
-                                                              onClick={() =>
-                                                                document
-                                                                  .getElementById(
-                                                                    `file-${item.id_tieumuccon}`,
-                                                                  )
-                                                                  ?.click()
-                                                              }
-                                                              disabled={
-                                                                isEvaluationLocked
-                                                              }
-                                                              className={`${
-                                                                isEvaluationLocked
-                                                                  ? 'cursor-not-allowed opacity-50'
-                                                                  : 'cursor-pointer'
-                                                              } bg-primary text-white px-3 py-1 rounded hover:bg-opacity-90 mr-2 flex items-center`}
-                                                            >
-                                                              <UploadOutlined className="mr-1" />{' '}
-                                                              Tải file lên
-                                                            </button>
-
-                                                            <button
-                                                              onClick={() =>
-                                                                showFileList(
-                                                                  item.id_tieumuccon,
-                                                                )
-                                                              }
-                                                              className="bg-success text-white px-3 py-1 rounded hover:bg-opacity-90 flex items-center"
-                                                            >
-                                                              <EyeOutlined className="mr-1" />
-                                                              Xem danh sách file
-                                                              (
-                                                              {fileCounts[
-                                                                item
-                                                                  .id_tieumuccon
-                                                              ] || 0}
-                                                              )
-                                                            </button>
-                                                          </div>
-                                                        </div>
-                                                      </div>
-                                                    );
-                                                  })}
-                                            </div>
-                                          </>
-                                        );
-                                      })}
-                                </div>
-                              );
-                            })
-                        ) : (
-                          <>
-                            {' '}
-                            <div className="text-center text-lg font-medium">
-                              Không tìm thấy tiêu chí nào
-                            </div>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-center">
-                          <LoadingOutlined style={{ fontSize: '50px' }} />
-                        </div>
-                      </>
-                    )} */}
-                    {loadingDanhMuc === false ? (
-                      <>
-                        {filteredTieuChi &&
-                        Array.isArray(filteredTieuChi) &&
-                        filteredTieuChi.length > 0 ? (
-                          filteredTieuChi
-                            .filter((tc) => tc.hidden === 0)
-                            .map((existingData) => {
-                              const level1Id = existingData.so_tieuchi;
-                              const showTieuChi =
-                                !searchTerm || searchResults.tieuChi[level1Id];
-
-                              return (
-                                <div
-                                  key={`level-1-${level1Id}`}
-                                  className="level"
-                                  id={`level-1-${level1Id}`}
-                                >
-                                  {/* Chỉ hiển thị tiêu chí nếu nó phù hợp hoặc không có từ khóa tìm kiếm */}
-                                  {showTieuChi && (
-                                    <>
-                                      <h3 className="text-danger font-bold">
-                                        Tiêu chí - {level1Id}
-                                      </h3>
-                                      {/* {existingData.id_tieuchi} */}
-
-                                      <div className="flex flex-col sm:flex-row gap-2 mb-4">
-                                        <input
-                                          className="h-10 w-full sm:w-2/12 p-2 border rounded"
-                                          type="text"
-                                          placeholder="Số"
-                                          value={level1Id}
-                                          readOnly
-                                        />
-
-                                        <input
-                                          type="text"
-                                          className="h-10 w-full sm:w-2/12 p-2 border rounded"
-                                          placeholder="Tên Tiêu chí"
-                                          id={`ten-tieuchi-cap1-${level1Id}`}
-                                          defaultValue={
-                                            existingData?.ten_tieuchi || ''
-                                          }
-                                          readOnly
-                                        />
-                                        <textarea
-                                          id={`noidung-tieuchi-cap1-${level1Id}`}
-                                          className="w-full sm:w-9/12 p-2 border rounded"
-                                          defaultValue={
-                                            existingData?.mo_ta || ''
-                                          }
-                                          rows={2}
-                                          placeholder="Nội dung Tiêu chí"
-                                          readOnly
-                                        ></textarea>
-                                      </div>
-                                    </>
-                                  )}
-
-                                  {existingData?.cac_tieu_muc &&
-                                    Array.isArray(existingData?.cac_tieu_muc) &&
-                                    existingData?.cac_tieu_muc
-                                      .filter((item) => item.hidden === 0)
-                                      .map((item, level2Index) => {
-                                        const level2Id = level2Index + 1;
-                                        const tieuMucKey = `${level1Id}-${item.so_tieu_muc}`;
-                                        const showTieuMuc =
-                                          !searchTerm ||
-                                          searchResults.tieuMuc[tieuMucKey];
-
-                                        const existingDataTieuMuc =
-                                          existingData?.cac_tieu_muc.find(
-                                            (tc) =>
-                                              tc.so_tieu_muc ===
-                                                item?.so_tieu_muc &&
-                                              tc.hidden === 0,
-                                          );
-
-                                        return (
-                                          <>
-                                            <div
-                                              key={`${level1Id}-${level2Id}`}
-                                              className="level"
-                                              id={`level-2-${level1Id}-${level2Id}`}
-                                            >
-                                              {/* Chỉ hiển thị tiểu mục nếu nó phù hợp */}
-                                              {showTieuMuc && (
-                                                <>
-                                                  <h3 className="text-primary font-bold">
-                                                    Tiểu mục -{' '}
-                                                    {item?.so_tieu_muc}
-                                                  </h3>
-                                                  {/* {item?.id_tieumuc} */}
-
-                                                  <div className="flex flex-col sm:flex-row gap-2 mb-4">
-                                                    <input
-                                                      type="text"
-                                                      className="h-10 w-full sm:w-1/12 p-2 border rounded"
-                                                      placeholder="Số"
-                                                      value={`${item?.so_tieu_muc}`}
-                                                      readOnly
-                                                    />
-                                                    <input
-                                                      type="text"
-                                                      className="h-10 w-full sm:w-2/12 p-2 border rounded"
-                                                      placeholder="Tên Tiểu mục"
-                                                      defaultValue={
-                                                        item?.ten_tieu_muc || ''
+                                        {tieuMuc.cac_tieu_muc_con &&
+                                          Array.isArray(
+                                            tieuMuc.cac_tieu_muc_con,
+                                          ) &&
+                                          tieuMuc.cac_tieu_muc_con
+                                            .filter((tmc) => tmc.hidden === 0)
+                                            .map((tieuMucCon) => (
+                                              <tr
+                                                key={tieuMucCon.id_tieumuccon}
+                                                className="bg-teal-600 text-white hover:bg-teal-700"
+                                              >
+                                                <td
+                                                  className="border p-3 pl-12 text-left"
+                                                  style={{
+                                                    wordWrap: 'break-word',
+                                                    overflow: 'visible',
+                                                    whiteSpace: 'normal',
+                                                    maxWidth: '0',
+                                                  }}
+                                                >
+                                                  {tieuMucCon.ten_tieu_muc_con}{' '}
+                                                  {tieuMucCon.mo_ta_tieu_muc_con
+                                                    ? ` - ${tieuMucCon.mo_ta_tieu_muc_con}`
+                                                    : ''}
+                                                </td>
+                                                <td className="border p-3 text-center">
+                                                  {tieuMucCon.muc}
+                                                </td>
+                                                <td className="border p-3 text-center">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={
+                                                      evaluationScores[
+                                                        tieuMucCon.id_tieumuccon
+                                                      ] === 1
+                                                    }
+                                                    onChange={(e) => {
+                                                      if (e.target.checked) {
+                                                        handleEvaluationChange(
+                                                          tieuMucCon.id_tieumuccon,
+                                                          1,
+                                                        );
+                                                      } else {
+                                                        handleEvaluationChange(
+                                                          tieuMucCon.id_tieumuccon,
+                                                          -1,
+                                                        );
                                                       }
-                                                      id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                                      readOnly
-                                                    />
-
-                                                    <textarea
-                                                      className="w-full sm:w-9/12 p-2 border rounded"
-                                                      id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                                      defaultValue={
-                                                        item?.mo_ta_tieu_muc ||
-                                                        ''
+                                                    }}
+                                                    disabled={
+                                                      isEvaluationLocked
+                                                    }
+                                                    className="h-5 w-5 accent-primary"
+                                                  />
+                                                </td>
+                                                <td className="border p-3 text-center">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={
+                                                      evaluationScores[
+                                                        tieuMucCon.id_tieumuccon
+                                                      ] === 0
+                                                    }
+                                                    onChange={(e) => {
+                                                      if (e.target.checked) {
+                                                        handleEvaluationChange(
+                                                          tieuMucCon.id_tieumuccon,
+                                                          0,
+                                                        );
+                                                      } else {
+                                                        handleEvaluationChange(
+                                                          tieuMucCon.id_tieumuccon,
+                                                          -1,
+                                                        );
                                                       }
-                                                      rows={2}
-                                                      placeholder="Nội dung Tiểu mục"
-                                                      readOnly
-                                                    ></textarea>
+                                                    }}
+                                                    disabled={
+                                                      isEvaluationLocked
+                                                    }
+                                                    className="h-5 w-5 accent-primary"
+                                                  />
+                                                </td>
+                                                <td className="border p-2 text-center">
+                                                  <div className="flex justify-center space-x-1 sm:space-x-2">
+                                                    <button
+                                                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm sm:text-base transition-colors duration-200"
+                                                      onClick={() =>
+                                                        showFileList(
+                                                          tieuMucCon.id_tieumuccon,
+                                                        )
+                                                      }
+                                                      title="Xem file đính kèm"
+                                                    >
+                                                      <EyeOutlined />
+                                                    </button>
+                                                    <button
+                                                      className="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded text-sm sm:text-base transition-colors duration-200"
+                                                      title="Tải file lên"
+                                                      onClick={() =>
+                                                        document
+                                                          .getElementById(
+                                                            `file-${tieuMucCon.id_tieumuccon}`,
+                                                          )
+                                                          ?.click()
+                                                      }
+                                                      disabled={
+                                                        isEvaluationLocked
+                                                      }
+                                                    >
+                                                      <UploadOutlined />
+                                                    </button>
+                                                    <button
+                                                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-sm sm:text-base transition-colors duration-200"
+                                                      title="Thêm ghi chú"
+                                                      onClick={() =>
+                                                        handleNoteClick(
+                                                          tieuMucCon.id_tieumuccon,
+                                                        )
+                                                      }
+                                                      disabled={
+                                                        isEvaluationLocked
+                                                      }
+                                                    >
+                                                      <CommentOutlined />
+                                                    </button>
+                                                    <input
+                                                      type="file"
+                                                      id={`file-${tieuMucCon.id_tieumuccon}`}
+                                                      onChange={(e) =>
+                                                        handleFileUpload(
+                                                          e,
+                                                          tieuMucCon.id_tieumuccon,
+                                                        )
+                                                      }
+                                                      className="hidden"
+                                                      multiple
+                                                      accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                                    />
                                                   </div>
-                                                </>
-                                              )}
-
-                                              {existingDataTieuMuc?.cac_tieu_muc_con &&
-                                                Array.isArray(
-                                                  existingDataTieuMuc?.cac_tieu_muc_con,
-                                                ) &&
-                                                existingDataTieuMuc?.cac_tieu_muc_con
-                                                  .filter(
-                                                    (item) => item.hidden === 0,
-                                                  )
-                                                  .map((item, level3Index) => {
-                                                    const level3Id =
-                                                      level3Index + 1;
-                                                    const tieuMucConKey = `${level1Id}-${existingDataTieuMuc.so_tieu_muc}-${item.so_tieu_muc_con}`;
-                                                    const showTieuMucCon =
-                                                      !searchTerm ||
-                                                      searchResults.tieuMucCon[
-                                                        tieuMucConKey
-                                                      ];
-
-                                                    return (
-                                                      <>
-                                                        {/* Chỉ hiển thị tiểu mục con nếu nó phù hợp */}
-                                                        {showTieuMucCon && (
-                                                          <div
-                                                            key={`${level1Id}-${level2Id}-${level3Id}`}
-                                                            data-so-tieu-muc-con={
-                                                              item?.so_tieu_muc_con
-                                                            }
-                                                            className="level"
-                                                            id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
-                                                          >
-                                                            <h3 className="text-success font-bold">
-                                                              Tiểu mục con -{' '}
-                                                              {
-                                                                item?.so_tieu_muc_con
-                                                              }
-                                                            </h3>
-                                                            {/* {item?.id_tieumuccon} */}
-                                                            <div
-                                                              className="input-group flex flex-col sm:flex-row gap-2"
-                                                              key={
-                                                                item?.so_tieu_muc_con
-                                                              }
-                                                            >
-                                                              <input
-                                                                type="text"
-                                                                className="h-10 w-full sm:w-1/12 p-2 rounded"
-                                                                placeholder="Số"
-                                                                value={`${item?.so_tieu_muc_con}`}
-                                                                readOnly
-                                                              />
-                                                              <input
-                                                                type="text"
-                                                                className="h-10 w-full sm:w-2/12 p-2 rounded"
-                                                                placeholder="Tên Tiểu mục con"
-                                                                id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                                defaultValue={
-                                                                  item?.ten_tieu_muc_con
-                                                                    ? item?.ten_tieu_muc_con
-                                                                    : ''
-                                                                }
-                                                                readOnly
-                                                              />
-                                                              <input
-                                                                className="h-10 w-full sm:w-1/12 p-2 border rounded"
-                                                                type="number"
-                                                                min={1}
-                                                                placeholder="Mức"
-                                                                id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                                defaultValue={
-                                                                  item?.muc
-                                                                    ? item?.muc
-                                                                    : ''
-                                                                }
-                                                                onInput={(
-                                                                  e: any,
-                                                                ) => {
-                                                                  if (
-                                                                    e.target
-                                                                      .value <=
-                                                                    1
-                                                                  )
-                                                                    e.target.value = 1;
-                                                                }}
-                                                                readOnly
-                                                              />
-                                                              <textarea
-                                                                id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                                className="w-full sm:w-9/12 p-2 border rounded"
-                                                                defaultValue={
-                                                                  item?.mo_ta_tieu_muc_con
-                                                                    ? item?.mo_ta_tieu_muc_con
-                                                                    : ''
-                                                                }
-                                                                rows={2}
-                                                                placeholder="Nội dung Tiểu mục con"
-                                                                readOnly
-                                                              ></textarea>
-                                                            </div>
-
-                                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-3">
-                                                              <div className="flex items-center">
-                                                                <input
-                                                                  title={
-                                                                    isEvaluationLocked
-                                                                      ? `Không thể chọn do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
-                                                                      : `Chọn đánh giá`
-                                                                  }
-                                                                  type="checkbox"
-                                                                  checked={
-                                                                    evaluationScores[
-                                                                      item
-                                                                        .id_tieumuccon
-                                                                    ] === 1
-                                                                  }
-                                                                  onChange={(
-                                                                    e,
-                                                                  ) => {
-                                                                    if (
-                                                                      e.target
-                                                                        .checked
-                                                                    ) {
-                                                                      handleEvaluationChange(
-                                                                        item.id_tieumuccon,
-                                                                        1,
-                                                                      );
-                                                                    }
-                                                                  }}
-                                                                  disabled={
-                                                                    isEvaluationLocked
-                                                                  }
-                                                                  className={`h-5 w-5 ml-2 ${
-                                                                    isEvaluationLocked
-                                                                      ? 'cursor-not-allowed'
-                                                                      : 'cursor-pointer'
-                                                                  } rounded border-[1.5px] border-stroke bg-transparent accent-primary`}
-                                                                />
-                                                                <label className="ml-2 text-black text-sm sm:text-base">
-                                                                  Đạt
-                                                                </label>
-                                                              </div>
-                                                              <div className="flex items-center">
-                                                                <input
-                                                                  title={
-                                                                    isEvaluationLocked
-                                                                      ? `Không thể chọn do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
-                                                                      : `Chọn đánh giá`
-                                                                  }
-                                                                  type="checkbox"
-                                                                  checked={
-                                                                    evaluationScores[
-                                                                      item
-                                                                        .id_tieumuccon
-                                                                    ] === 0
-                                                                  }
-                                                                  onChange={(
-                                                                    e,
-                                                                  ) => {
-                                                                    if (
-                                                                      e.target
-                                                                        .checked
-                                                                    ) {
-                                                                      handleEvaluationChange(
-                                                                        item.id_tieumuccon,
-                                                                        0,
-                                                                      );
-                                                                    }
-                                                                  }}
-                                                                  disabled={
-                                                                    isEvaluationLocked
-                                                                  }
-                                                                  className={`h-5 w-5 ml-2 ${
-                                                                    isEvaluationLocked
-                                                                      ? 'cursor-not-allowed'
-                                                                      : 'cursor-pointer'
-                                                                  } rounded border-[1.5px] border-stroke bg-transparent accent-primary`}
-                                                                />
-                                                                <label className="ml-2 text-black text-sm sm:text-base">
-                                                                  Không đạt
-                                                                </label>
-                                                              </div>
-                                                            </div>
-                                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-3">
-                                                              <div className="w-full">
-                                                                <textarea
-                                                                  rows={2}
-                                                                  placeholder="Nhập ghi chú đánh giá..."
-                                                                  className="w-full p-2 border rounded"
-                                                                  value={
-                                                                    evaluationNotes[
-                                                                      item
-                                                                        .id_tieumuccon
-                                                                    ] || ''
-                                                                  }
-                                                                  onChange={(
-                                                                    e,
-                                                                  ) =>
-                                                                    handleNoteChange(
-                                                                      item.id_tieumuccon,
-                                                                      e.target
-                                                                        .value,
-                                                                    )
-                                                                  }
-                                                                  disabled={
-                                                                    isEvaluationLocked
-                                                                  }
-                                                                ></textarea>
-                                                              </div>
-                                                            </div>
-
-                                                            <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                                                              <div className="flex items-center">
-                                                                <input
-                                                                  type="file"
-                                                                  id={`file-${item.id_tieumuccon}`}
-                                                                  onChange={(
-                                                                    e,
-                                                                  ) =>
-                                                                    handleFileUpload(
-                                                                      e,
-                                                                      item?.id_tieumuccon,
-                                                                    )
-                                                                  }
-                                                                  className="hidden"
-                                                                  multiple
-                                                                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                                                />
-                                                                <button
-                                                                  title={
-                                                                    isEvaluationLocked
-                                                                      ? `Không thể tải file do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
-                                                                      : `Đính kèm file`
-                                                                  }
-                                                                  onClick={() =>
-                                                                    document
-                                                                      .getElementById(
-                                                                        `file-${item.id_tieumuccon}`,
-                                                                      )
-                                                                      ?.click()
-                                                                  }
-                                                                  disabled={
-                                                                    isEvaluationLocked
-                                                                  }
-                                                                  className={`${
-                                                                    isEvaluationLocked
-                                                                      ? 'cursor-not-allowed opacity-50'
-                                                                      : 'cursor-pointer'
-                                                                  } bg-primary text-white px-3 py-1 rounded hover:bg-opacity-90 mr-2 flex items-center`}
-                                                                >
-                                                                  <UploadOutlined className="mr-1" />{' '}
-                                                                  Tải file lên
-                                                                </button>
-
-                                                                <button
-                                                                  onClick={() =>
-                                                                    showFileList(
-                                                                      item.id_tieumuccon,
-                                                                    )
-                                                                  }
-                                                                  className="bg-success text-white px-3 py-1 rounded hover:bg-opacity-90 flex items-center"
-                                                                >
-                                                                  <EyeOutlined className="mr-1" />
-                                                                  Xem danh sách
-                                                                  file (
-                                                                  {fileCounts[
-                                                                    item
-                                                                      .id_tieumuccon
-                                                                  ] || 0}
-                                                                  )
-                                                                </button>
-                                                              </div>
-                                                            </div>
-                                                          </div>
-                                                        )}
-                                                      </>
-                                                    );
-                                                  })}
-                                            </div>
-                                          </>
-                                        );
-                                      })}
-                                </div>
-                              );
-                            })
-                        ) : (
-                          <>
-                            {' '}
-                            <div className="text-center text-lg font-medium">
-                              {searchTerm
-                                ? 'Không tìm thấy kết quả phù hợp với từ khóa tìm kiếm'
-                                : 'Không tìm thấy tiêu chí nào'}
-                            </div>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-center">
-                          <LoadingOutlined style={{ fontSize: '50px' }} />
-                        </div>
-                      </>
-                    )}
-                  </div>
+                                                </td>
+                                              </tr>
+                                            ))}
+                                      </Fragment>
+                                    ))}
+                              </Fragment>
+                            ))}
+                        </>
+                      ) : (
+                        <tr>
+                          <td colSpan={5} className="border p-4 text-center">
+                            {loadingDanhMuc ? (
+                              <div className="flex justify-center items-center">
+                                <LoadingOutlined
+                                  style={{ fontSize: '24px' }}
+                                  className="mr-2"
+                                />{' '}
+                                Đang tải dữ liệu...
+                              </div>
+                            ) : (
+                              'Không tìm thấy tiêu chí nào'
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </>
             )}
           </div>
         </>
       ) : (
-        <>
-          <Result
-            status="403"
-            title="403"
-            subTitle="Bạn không có quyền truy cập trang này"
-            extra={
-              <Link to={'/quan-ly-tieu-chi'}>
-                <button className="hover:bg-primary bg-primary p-2 text-white rounded">
-                  Quay lại trang chủ
-                </button>
-              </Link>
-            }
-          />
-        </>
+        <Result
+          status="403"
+          title="403"
+          subTitle="Xin lỗi, bạn không có quyền truy cập vào trang này."
+          extra={<Link to="/">Quay lại Trang chủ</Link>}
+        />
       )}
 
       <Modal
-        title="Danh sách file đã tải lên"
+        title={`Danh sách file đã tải lên`}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
-        width="90%"
-        className="max-w-2xl"
+        width={800}
       >
-        <List
-          dataSource={storedFiles[selectedTieuMucCon] || []}
-          renderItem={(file) => (
-            <List.Item
-              actions={[
-                <span
-                  title="Tải file về máy"
-                  onClick={() =>
-                    window.open(
-                      `http://172.16.0.60:83/api/download_file/${file.fileId}`,
-                      '_blank',
-                    )
-                  }
-                  className="text-primary hover:text-primary-dark cursor-pointer"
-                >
-                  <DownloadOutlined /> Tải về
-                </span>,
-                <span
-                  title={
-                    isEvaluationLocked
-                      ? `Không thể xóa do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
-                      : `Xóa file`
-                  }
-                  onClick={() =>
-                    !isEvaluationLocked &&
-                    handleDeleteFile(selectedTieuMucCon, file.fileId)
-                  }
-                  className={`text-danger hover:text-danger-dark ${
-                    isEvaluationLocked
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'cursor-pointer'
-                  } `}
-                >
-                  <DeleteOutlined /> Xóa
-                </span>,
-              ]}
-            >
-              <div className="break-all">{file.fileName}</div>
-            </List.Item>
-          )}
+        {selectedTieuMucCon && (
+          <>
+            {storedFiles[selectedTieuMucCon] &&
+            storedFiles[selectedTieuMucCon].length > 0 ? (
+              <List
+                dataSource={storedFiles[selectedTieuMucCon]}
+                renderItem={(item) => (
+                  <List.Item
+                    key={item.fileId}
+                    actions={[
+                      <span
+                        title="Tải file về"
+                        onClick={() =>
+                          window.open(
+                            `http://172.16.0.60:83/api/download_file/${item.fileId}`,
+                            '_blank',
+                          )
+                        }
+                        className="text-primary hover:text-primary-dark cursor-pointer"
+                      >
+                        <DownloadOutlined />
+                      </span>,
+                      <span
+                        title={
+                          isEvaluationLocked
+                            ? `Không thể xóa do đánh giá đã bị khóa. Vui lòng liên hệ QLCL để mở khóa đánh giá`
+                            : `Xóa file`
+                        }
+                        onClick={() =>
+                          !isEvaluationLocked &&
+                          handleDeleteFile(selectedTieuMucCon, item.fileId)
+                        }
+                        className={`text-danger hover:text-danger-dark ${
+                          isEvaluationLocked
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'cursor-pointer'
+                        } `}
+                      >
+                        <DeleteOutlined />
+                      </span>,
+                    ]}
+                  >
+                    <div>{item.fileName}</div>
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <div className="text-center">Không có file nào được tải lên</div>
+            )}
+          </>
+        )}
+      </Modal>
+
+      <Modal
+        title="Nhập ghi chú đánh giá"
+        open={isNoteModalVisible}
+        onOk={handleSaveNote}
+        onCancel={() => setIsNoteModalVisible(false)}
+        width={600}
+        okText="Lưu ghi chú"
+        okButtonProps={{
+          className: 'bg-blue-500 hover:bg-blue-600 text-white border-none',
+          style: {
+            padding: '4px 16px',
+            height: '32px',
+            borderRadius: '4px',
+            transition: 'all 0.3s',
+          },
+        }}
+        cancelButtonProps={{
+          className: 'border-gray-300 hover:border-gray-400',
+          style: {
+            padding: '4px 16px',
+            height: '32px',
+            borderRadius: '4px',
+            transition: 'all 0.3s',
+          },
+        }}
+      >
+        <textarea
+          value={tempNote}
+          onChange={(e) => {
+            setTempNote(e.target.value);
+            const textarea = e.target as HTMLTextAreaElement;
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+          }}
+          className="w-full p-2 border rounded note-textarea"
+          rows={4}
+          placeholder="Nhập ghi chú đánh giá..."
+          disabled={isEvaluationLocked}
         />
       </Modal>
     </>

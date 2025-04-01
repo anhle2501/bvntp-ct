@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import './ChiTieuCap1.css';
 import { message, Result } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined, EyeOutlined } from '@ant-design/icons';
 import { DanhMuc } from '../../types/danhmuc';
 import { DanhSachPhanQuyenTieuChi } from '../../api/TieuChiKhoaPhongAPI';
 import { Link, useNavigate } from 'react-router-dom';
@@ -9,34 +9,14 @@ import Select from 'react-select';
 import axios from 'axios';
 
 const ChiTieuTheoKhoa: React.FC = () => {
-  // const [level1Count] = useState<number>(83);
-
   const [loadingDanhMuc, setLoadingDanhMuc] = useState(true);
-
   const [danhSachTieuChiTheoKhoa, setDanhSachTieuChiTheoKhoa] = useState<
     DanhMuc[]
   >([]);
   const [khoaPhong, setKhoaPhong] = useState('');
   const [messageApi, contextHolder] = message.useMessage();
-
   const [danhSachDot, setDanhSachDot] = useState<any[]>([]);
-
   const [selectedDot, setSelectedDot] = useState<string>('');
-
-  // Add search functionality
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [filteredTieuChi, setFilteredTieuChi] = useState<DanhMuc[]>([]);
-
-  // Thay đổi cấu trúc state để lưu trữ thông tin về các phần tử phù hợp
-  const [searchResults, setSearchResults] = useState<{
-    tieuChi: Record<string, boolean>;
-    tieuMuc: Record<string, boolean>;
-    tieuMucCon: Record<string, boolean>;
-  }>({
-    tieuChi: {},
-    tieuMuc: {},
-    tieuMucCon: {},
-  });
 
   const navigate = useNavigate();
 
@@ -73,10 +53,8 @@ const ChiTieuTheoKhoa: React.FC = () => {
     try {
       const response = await axios.get('http://172.16.0.60:83/api/phan_quyen');
       if (response.data) {
-        // Filter and transform the data
         const dotTheoKhoa = response.data
           .filter((item: any) => {
-            // Find if any phan_quyen entry matches the khoaPhong
             return item.phan_quyen.some((pq: any) => pq.ten_khoa === khoaPhong);
           })
           .map((item: any) => ({
@@ -95,7 +73,7 @@ const ChiTieuTheoKhoa: React.FC = () => {
     if (khoaPhong) {
       layDanhSachDotTheoKhoa();
     }
-  }, [khoaPhong, status]);
+  }, [khoaPhong]);
 
   useEffect(() => {
     try {
@@ -118,110 +96,29 @@ const ChiTieuTheoKhoa: React.FC = () => {
     }
   }, [khoaPhong]);
 
-  // Add this effect to filter the data when searchTerm or danhSachTieuChiTheoKhoa changes
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredTieuChi(danhSachTieuChiTheoKhoa);
-      return;
-    }
-
-    const lowercasedSearch = searchTerm.toLowerCase();
-
-    const filtered = danhSachTieuChiTheoKhoa.filter((tieuChi) => {
-      // Search in tiêu chí
-      if (
-        tieuChi.so_tieuchi.toString().includes(lowercasedSearch) ||
-        (tieuChi.ten_tieuchi &&
-          tieuChi.ten_tieuchi.toLowerCase().includes(lowercasedSearch)) ||
-        (tieuChi.mo_ta &&
-          tieuChi.mo_ta.toLowerCase().includes(lowercasedSearch))
-      ) {
-        return true;
-      }
-
-      // Search in tiểu mục
-      if (tieuChi.cac_tieu_muc && Array.isArray(tieuChi.cac_tieu_muc)) {
-        for (const tieuMuc of tieuChi.cac_tieu_muc) {
-          if (
-            tieuMuc.so_tieu_muc.toString().includes(lowercasedSearch) ||
-            (tieuMuc.ten_tieu_muc &&
-              tieuMuc.ten_tieu_muc.toLowerCase().includes(lowercasedSearch)) ||
-            (tieuMuc.mo_ta_tieu_muc &&
-              tieuMuc.mo_ta_tieu_muc.toLowerCase().includes(lowercasedSearch))
-          ) {
-            return true;
-          }
-
-          // Search in tiểu mục con
-          if (
-            tieuMuc.cac_tieu_muc_con &&
-            Array.isArray(tieuMuc.cac_tieu_muc_con)
-          ) {
-            for (const tieuMucCon of tieuMuc.cac_tieu_muc_con) {
-              if (
-                tieuMucCon.so_tieu_muc_con
-                  .toString()
-                  .includes(lowercasedSearch) ||
-                (tieuMucCon.ten_tieu_muc_con &&
-                  tieuMucCon.ten_tieu_muc_con
-                    .toLowerCase()
-                    .includes(lowercasedSearch)) ||
-                (tieuMucCon.mo_ta_tieu_muc_con &&
-                  tieuMucCon.mo_ta_tieu_muc_con
-                    .toLowerCase()
-                    .includes(lowercasedSearch))
-              ) {
-                return true;
-              }
-            }
-          }
-        }
-      }
-
-      return false;
-    });
-
-    setFilteredTieuChi(filtered);
-  }, [searchTerm, danhSachTieuChiTheoKhoa]);
-
   const handleDotChange = (selectedOption: any) => {
-    // Bắt buộc tạo giá trị state mới ngay cả khi chọn cùng một option
     setLoadingDanhMuc(true);
-
-    // Xóa lựa chọn trước để buộc re-render
     setSelectedDot('');
-
-    // Sử dụng setTimeout để đảm bảo cập nhật state xảy ra trong chu kỳ render riêng biệt
     setTimeout(() => {
       setSelectedDot(selectedOption ? selectedOption.value : '');
     }, 0);
   };
 
-  // Handler for search input changes
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
-  // Modify the fetchDataTieuChiTheoKhoa function to use the selected dot
   const fetchDataTieuChiTheoKhoa = async () => {
     try {
       let data = await DanhSachPhanQuyenTieuChi();
 
       if (data && Array.isArray(data)) {
-        // If a dot is selected, find that specific record
         let targetPhanQuyen;
 
         if (selectedDot) {
-          // Find the record that matches the selected dot's timestamp
           targetPhanQuyen = data.find(
             (record) => formatDate(record.thoi_gian_ghi_nhan) === selectedDot,
           )?.phan_quyen;
         } else {
-          // If no dot is selected, use the latest record (first item)
           targetPhanQuyen = data[0]?.phan_quyen;
         }
 
-        // Find the khoa's data in the selected/latest phan_quyen
         const khoaData = targetPhanQuyen?.find(
           (item: any) => item.ten_khoa === khoaPhong,
         );
@@ -246,32 +143,20 @@ const ChiTieuTheoKhoa: React.FC = () => {
 
   useEffect(() => {
     if (khoaPhong) {
-      // Chỉ fetch khi đã có khoaPhong
       fetchDataTieuChiTheoKhoa();
     }
-  }, [khoaPhong, selectedDot]); // Add selectedDot as a dependency
-
-  const tx = document.getElementsByTagName('textarea');
-  for (let i = 0; i < tx.length; i++) {
-    tx[i].style.height = tx[i].scrollHeight + 'px';
-    tx[i].style.overflowY = 'hidden';
-    tx[i].addEventListener('input', OnInput, false);
-  }
-
-  function OnInput(this: HTMLTextAreaElement) {
-    this.style.height = 'auto';
-    this.style.height = this.scrollHeight + 'px';
-  }
+  }, [khoaPhong, selectedDot]);
 
   return (
     <>
       {contextHolder}
       {khoaPhong !== 'Phòng Quản Lý chất lượng' ? (
         <>
-          <div className="container mx-auto px-4">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4">
-              Danh mục của {khoaPhong}
-            </h1>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-xl sm:text-2xl font-bold mb-4">
+              Danh mục tiêu chí {khoaPhong}
+            </div>
+            <br />
             <div className="w-full mb-6">
               <Select
                 isDisabled={false}
@@ -289,325 +174,157 @@ const ChiTieuTheoKhoa: React.FC = () => {
                 }))}
                 placeholder="Chọn đợt"
                 isClearable={true}
-                onChange={handleDotChange} // Add the handler here
+                onChange={handleDotChange}
                 className="w-full sm:w-1/2 mb-4"
               />
-
-              {/* Add search input */}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm tiêu chí, tiểu mục, tiểu mục con..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="w-full sm:w-1/2 p-2 border rounded"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="bg-primary h-full px-3 pt-3 pb-3 text-white sm:right-1/2 sm:mr-8"
-                  >
-                    Đặt lại
-                  </button>
-                )}
-              </div>
             </div>
+            <br />
+
             {selectedDot && (
               <>
-                <div id="form-container">
-                  <div id="levels-container" className="space-y-6">
-                    {loadingDanhMuc === false ? (
-                      <>
-                        {/* {danhSachTieuChiTheoKhoa &&
-                        Array.isArray(danhSachTieuChiTheoKhoa) &&
-                        danhSachTieuChiTheoKhoa.length > 0 ? (
-                          danhSachTieuChiTheoKhoa
+                <div className="overflow-auto" style={{ maxWidth: '100%' }}>
+                  <table
+                    className="w-full border-collapse border"
+                    style={{ tableLayout: 'fixed', minWidth: '768px' }}
+                  >
+                    <thead>
+                      <tr className="bg-gray-900 text-white">
+                        <th
+                          className="border p-3 text-center font-semibold bg-purple-800"
+                          style={{
+                            width: '80%',
+                            wordWrap: 'break-word',
+                            overflow: 'visible',
+                            whiteSpace: 'normal',
+                          }}
+                        >
+                          Nội dung
+                        </th>
+                        <th
+                          className="border p-3 text-center font-semibold bg-yellow-800"
+                          style={{ width: '20%' }}
+                        >
+                          Mức
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {danhSachTieuChiTheoKhoa &&
+                      Array.isArray(danhSachTieuChiTheoKhoa) &&
+                      danhSachTieuChiTheoKhoa.length > 0 ? (
+                        <>
+                          {danhSachTieuChiTheoKhoa
                             .filter((tc) => tc.hidden === 0)
-                            .map((existingData) => { */}
-                        {filteredTieuChi &&
-                        Array.isArray(filteredTieuChi) &&
-                        filteredTieuChi.length > 0 ? (
-                          filteredTieuChi
-                            .filter((tc) => tc.hidden === 0)
-                            .map((existingData) => {
-                              const level1Id = existingData.so_tieuchi;
-                              const showTieuChi =
-                                !searchTerm || searchResults.tieuChi[level1Id];
+                            .map((tieuChi) => (
+                              <Fragment key={tieuChi.id_tieuchi}>
+                                <tr className="bg-blue-700 text-white hover:bg-blue-800">
+                                  <td
+                                    className="border p-3 font-medium"
+                                    style={{
+                                      wordWrap: 'break-word',
+                                      overflow: 'visible',
+                                      whiteSpace: 'normal',
+                                      maxWidth: '0',
+                                    }}
+                                    colSpan={2}
+                                  >
+                                    {tieuChi.ten_tieuchi}{' '}
+                                    {tieuChi.mo_ta ? ` - ${tieuChi.mo_ta}` : ''}
+                                  </td>
+                                </tr>
 
-                              return (
-                                <div
-                                  key={`level-1-${level1Id}`}
-                                  className="level"
-                                  id={`level-1-${level1Id}`}
-                                >
-                                  {/* Chỉ hiển thị tiêu chí nếu nó phù hợp hoặc không có từ khóa tìm kiếm */}
-                                  {showTieuChi && (
-                                    <>
-                                      <h3 className="text-red-600 font-bold text-lg md:text-xl mb-4">
-                                        Tiêu chí - {level1Id}
-                                      </h3>
-
-                                      <div className="flex flex-col md:flex-row gap-4 mb-4">
-                                        <input
-                                          type="text"
-                                          placeholder="Số"
-                                          value={level1Id}
-                                          readOnly
-                                          className="h-10 w-full md:w-[8%] p-2 border rounded"
-                                        />
-
-                                        <input
-                                          type="text"
-                                          placeholder="Tên Tiêu chí"
-                                          id={`ten-tieuchi-cap1-${level1Id}`}
-                                          defaultValue={
-                                            existingData?.ten_tieuchi || ''
-                                          }
-                                          className="h-10 w-full md:w-[20%] p-2 border rounded"
-                                          readOnly
-                                        />
-                                        <textarea
-                                          id={`noidung-tieuchi-cap1-${level1Id}`}
-                                          defaultValue={
-                                            existingData?.mo_ta || ''
-                                          }
-                                          rows={2}
-                                          className="w-full md:w-[72%] p-2 border rounded min-h-[60px] resize-y"
-                                          placeholder="Nội dung Tiêu chí"
-                                          readOnly
-                                        ></textarea>
-                                      </div>
-                                    </>
-                                  )}
-
-                                  {existingData?.cac_tieu_muc &&
-                                    Array.isArray(existingData?.cac_tieu_muc) &&
-                                    existingData?.cac_tieu_muc
-                                      .filter((item) => {
-                                        // Only show tiểu mục that are not hidden AND have at least one visible tiểu mục con
-                                        return (
-                                          item.hidden === 0 &&
-                                          Array.isArray(
-                                            item.cac_tieu_muc_con,
-                                          ) &&
-                                          item.cac_tieu_muc_con.filter(
-                                            (subItem) => subItem.hidden === 0,
-                                          ).length > 0
-                                        );
-                                      })
-                                      .map((item, level2Index) => {
-                                        const level2Id = level2Index + 1;
-                                        const tieuMucKey = `${level1Id}-${item.so_tieu_muc}`;
-                                        const showTieuMuc =
-                                          !searchTerm ||
-                                          searchResults.tieuMuc[tieuMucKey];
-
-                                        const existingDataTieuMuc =
-                                          existingData?.cac_tieu_muc.find(
-                                            (tc) =>
-                                              tc.so_tieu_muc ===
-                                                item?.so_tieu_muc &&
-                                              tc.hidden === 0,
-                                          );
-
-                                        return (
-                                          <>
-                                            <div
-                                              key={`${level1Id}-${level2Id}`}
-                                              className="level"
-                                              id={`level-2-${level1Id}-${level2Id}`}
+                                {tieuChi.cac_tieu_muc &&
+                                  Array.isArray(tieuChi.cac_tieu_muc) &&
+                                  tieuChi.cac_tieu_muc
+                                    .filter((tm) => tm.hidden === 0)
+                                    .map((tieuMuc) => (
+                                      <Fragment key={tieuMuc.id_tieumuc}>
+                                        {tieuMuc.ten_tieu_muc && (
+                                          <tr className="bg-indigo-600 text-white hover:bg-indigo-700">
+                                            <td
+                                              className="border p-3 pl-8"
+                                              style={{
+                                                wordWrap: 'break-word',
+                                                overflow: 'visible',
+                                                whiteSpace: 'normal',
+                                                maxWidth: '0',
+                                              }}
+                                              colSpan={2}
                                             >
-                                              {/* Chỉ hiển thị tiểu mục nếu nó phù hợp */}
-                                              {showTieuMuc && (
-                                                <>
-                                                  <h3 className="text-primary font-bold">
-                                                    Tiểu mục -{' '}
-                                                    {item?.so_tieu_muc}
-                                                  </h3>
+                                              {tieuMuc.ten_tieu_muc}{' '}
+                                              {tieuMuc.mo_ta_tieu_muc
+                                                ? `- ${tieuMuc.mo_ta_tieu_muc}`
+                                                : ''}
+                                            </td>
+                                          </tr>
+                                        )}
 
-                                                  <div className="flex flex-col md:flex-row gap-4 mb-4">
-                                                    <input
-                                                      type="text"
-                                                      placeholder="Số"
-                                                      value={`${item?.so_tieu_muc}`}
-                                                      readOnly
-                                                      className="h-10 w-full md:w-[8%] p-2 border rounded"
-                                                    />
-                                                    <input
-                                                      type="text"
-                                                      placeholder="Tên Tiểu mục"
-                                                      defaultValue={
-                                                        item?.ten_tieu_muc || ''
-                                                      }
-                                                      className="h-10 w-full md:w-[20%] p-2 border rounded"
-                                                      id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                                      readOnly
-                                                    />
-
-                                                    <textarea
-                                                      id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                                      className="w-full md:w-[72%] p-2 border rounded min-h-[60px] resize-y"
-                                                      defaultValue={
-                                                        item?.mo_ta_tieu_muc ||
-                                                        ''
-                                                      }
-                                                      rows={2}
-                                                      placeholder="Nội dung Tiểu mục"
-                                                      readOnly
-                                                    ></textarea>
-                                                  </div>
-                                                </>
-                                              )}
-
-                                              {existingDataTieuMuc?.cac_tieu_muc_con &&
-                                                Array.isArray(
-                                                  existingDataTieuMuc?.cac_tieu_muc_con,
-                                                ) &&
-                                                existingDataTieuMuc?.cac_tieu_muc_con
-                                                  .filter(
-                                                    (item) => item.hidden === 0,
-                                                  )
-                                                  .map((item, level3Index) => {
-                                                    const level3Id =
-                                                      level3Index + 1;
-                                                    const tieuMucConKey = `${level1Id}-${existingDataTieuMuc.so_tieu_muc}-${item.so_tieu_muc_con}`;
-                                                    const showTieuMucCon =
-                                                      !searchTerm ||
-                                                      searchResults.tieuMucCon[
-                                                        tieuMucConKey
-                                                      ];
-
-                                                    return (
-                                                      <>
-                                                        {/* Chỉ hiển thị tiểu mục con nếu nó phù hợp */}
-                                                        {showTieuMucCon && (
-                                                          <div
-                                                            key={`${level1Id}-${level2Id}-${level3Id}`}
-                                                            data-so-tieu-muc-con={
-                                                              item?.so_tieu_muc_con
-                                                            }
-                                                            className="level"
-                                                            id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
-                                                          >
-                                                            <h3 className="text-success font-bold">
-                                                              Tiểu mục con -{' '}
-                                                              {
-                                                                item?.so_tieu_muc_con
-                                                              }
-                                                            </h3>
-
-                                                            <div
-                                                              className="flex flex-col md:flex-row gap-4"
-                                                              key={
-                                                                item?.so_tieu_muc_con
-                                                              }
-                                                            >
-                                                              <input
-                                                                type="text"
-                                                                placeholder="Số"
-                                                                value={`${item?.so_tieu_muc_con}`}
-                                                                readOnly
-                                                                className="h-10 w-full md:w-[8%] p-2 border rounded"
-                                                              />
-                                                              <input
-                                                                type="text"
-                                                                placeholder="Tên Tiểu mục con"
-                                                                id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                                defaultValue={
-                                                                  item?.ten_tieu_muc_con
-                                                                    ? item?.ten_tieu_muc_con
-                                                                    : ''
-                                                                }
-                                                                readOnly
-                                                                className="h-10 w-full md:w-[20%] p-2 border rounded"
-                                                              />
-                                                              <input
-                                                                type="number"
-                                                                min={1}
-                                                                placeholder="Mức"
-                                                                id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                                defaultValue={
-                                                                  item?.muc
-                                                                    ? item?.muc
-                                                                    : ''
-                                                                }
-                                                                onInput={(
-                                                                  e: any,
-                                                                ) => {
-                                                                  if (
-                                                                    e.target
-                                                                      .value <=
-                                                                    1
-                                                                  )
-                                                                    e.target.value = 1;
-                                                                }}
-                                                                readOnly
-                                                                className="h-10 w-full md:w-[10%] p-2 border rounded"
-                                                              />
-                                                              <textarea
-                                                                id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                                defaultValue={
-                                                                  item?.mo_ta_tieu_muc_con
-                                                                    ? item?.mo_ta_tieu_muc_con
-                                                                    : ''
-                                                                }
-                                                                className="w-full md:w-[62%] p-2 border rounded min-h-[60px] resize-y"
-                                                                rows={2}
-                                                                placeholder="Nội dung Tiểu mục con"
-                                                                readOnly
-                                                              ></textarea>
-                                                            </div>
-                                                          </div>
-                                                        )}
-                                                      </>
-                                                    );
-                                                  })}
-                                            </div>
-                                          </>
-                                        );
-                                      })}
-                                </div>
-                              );
-                            })
-                        ) : (
-                          <>
-                            {' '}
-                            <div className="text-center text-lg font-medium">
-                              {searchTerm
-                                ? 'Không tìm thấy kết quả phù hợp với từ khóa tìm kiếm'
-                                : 'Không tìm thấy tiêu chí nào'}
-                            </div>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex justify-center">
-                          <LoadingOutlined className="text-4xl" />
-                        </div>
-                      </>
-                    )}
-                  </div>
+                                        {tieuMuc.cac_tieu_muc_con &&
+                                          Array.isArray(
+                                            tieuMuc.cac_tieu_muc_con,
+                                          ) &&
+                                          tieuMuc.cac_tieu_muc_con
+                                            .filter((tmc) => tmc.hidden === 0)
+                                            .map((tieuMucCon) => (
+                                              <tr
+                                                key={tieuMucCon.id_tieumuccon}
+                                                className="bg-teal-600 text-white hover:bg-teal-700"
+                                              >
+                                                <td
+                                                  className="border p-3 pl-12 text-left"
+                                                  style={{
+                                                    wordWrap: 'break-word',
+                                                    overflow: 'visible',
+                                                    whiteSpace: 'normal',
+                                                    maxWidth: '0',
+                                                  }}
+                                                >
+                                                  {tieuMucCon.ten_tieu_muc_con}{' '}
+                                                  {tieuMucCon.mo_ta_tieu_muc_con
+                                                    ? ` - ${tieuMucCon.mo_ta_tieu_muc_con}`
+                                                    : ''}
+                                                </td>
+                                                <td className="border p-3 text-center">
+                                                  {tieuMucCon.muc}
+                                                </td>
+                                              </tr>
+                                            ))}
+                                      </Fragment>
+                                    ))}
+                              </Fragment>
+                            ))}
+                        </>
+                      ) : (
+                        <tr>
+                          <td colSpan={2} className="border p-4 text-center">
+                            {loadingDanhMuc ? (
+                              <div className="flex justify-center items-center">
+                                <LoadingOutlined
+                                  style={{ fontSize: '24px' }}
+                                  className="mr-2"
+                                />{' '}
+                                Đang tải dữ liệu...
+                              </div>
+                            ) : (
+                              'Không tìm thấy tiêu chí nào'
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </>
             )}
           </div>
         </>
       ) : (
-        <>
-          <Result
-            status="403"
-            title="403"
-            subTitle="Bạn không có quyền truy cập trang này"
-            extra={
-              <Link to={'/quan-ly-tieu-chi'}>
-                <button className="hover:bg-primary bg-primary p-2 text-white rounded">
-                  Quay lại trang chủ
-                </button>
-              </Link>
-            }
-          />
-        </>
+        <Result
+          status="403"
+          title="403"
+          subTitle="Xin lỗi, bạn không có quyền truy cập vào trang này."
+          extra={<Link to="/">Quay lại Trang chủ</Link>}
+        />
       )}
     </>
   );

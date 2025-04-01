@@ -1,0 +1,42 @@
+/* Tùy chỉnh style cho checkbox trong DetailsChiTieu */
+.details-chitieu input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  cursor: not-allowed;
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.details-chitieu input[type='checkbox']:checked {
+  background-color: #22c55e; /* Màu xanh lá cho checkbox đạt */
+}
+
+.details-chitieu input[type='checkbox']:checked::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Style riêng cho checkbox không đạt */
+.details-chitieu input[type='checkbox'].accent-red-500:checked {
+  background-color: #ef4444; /* Màu đỏ cho checkbox không đạt */
+}
+
+/* Tăng độ sáng và độ trong suốt */
+.details-chitieu input[type='checkbox'] {
+  filter: brightness(1.2);
+  opacity: 0.8;
+}
+
+/* Thêm hiệu ứng hover */
+.details-chitieu input[type='checkbox']:hover {
+  filter: brightness(1.3);
+}

@@ -1,7 +1,15 @@
-import { useEffect, useState } from 'react';
-import './ChiTieuCap1.css';
-import { message, Result } from 'antd';
-import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
+import { useEffect, useState, Fragment } from 'react';
+// import './ChiTieuCap1.css';
+import './DetailsChiTieu.css';
+import { message, Result, Modal, List } from 'antd';
+import {
+  DownloadOutlined,
+  LoadingOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  UploadOutlined,
+  CommentOutlined,
+} from '@ant-design/icons';
 import { DanhMuc } from '../../types/danhmuc';
 import { DanhSachPhanQuyenTieuChi } from '../../api/TieuChiKhoaPhongAPI';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -20,8 +28,11 @@ const DetailsChiTieu: React.FC = () => {
   const [evaluationEvaluators, setEvaluationEvaluators] = useState<
     Record<string, string>
   >({});
-
   const [fileList, setFileList] = useState<Record<string, any[]>>({});
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedTieuMucCon, setSelectedTieuMucCon] = useState<string>('');
+  const [isNoteModalVisible, setIsNoteModalVisible] = useState(false);
+  const [tempNote, setTempNote] = useState<string>('');
 
   const { dotId } = useParams();
   const [status, setStatus] = useState<string>('');
@@ -60,9 +71,8 @@ const DetailsChiTieu: React.FC = () => {
       const response = await fetch('http://172.16.0.60:83/api/list_files');
       const data = await response.json();
 
-      // Filter files by dotId and group by id_tieumuccon
       const filteredAndGroupedFiles = data
-        .filter((file: any) => file.id_dot_danh_gia === dotId) // Filter files by the current evaluation ID
+        .filter((file: any) => file.id_dot_danh_gia === dotId)
         .reduce((acc: any, file: any) => {
           if (!acc[file.id_tieumuccon]) {
             acc[file.id_tieumuccon] = [];
@@ -104,8 +114,6 @@ const DetailsChiTieu: React.FC = () => {
         `http://172.16.0.60:83/api/download_file/${fileId}`,
       );
       const blob = await response.blob();
-
-      // Create download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -134,7 +142,6 @@ const DetailsChiTieu: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch evaluation data
         const evaluations = await DanhSachDanhGia();
         const selectedEvaluation = evaluations.find(
           (e: any) => e._id === dotId,
@@ -147,14 +154,21 @@ const DetailsChiTieu: React.FC = () => {
 
         setEvaluationData(selectedEvaluation);
 
-        // Khởi tạo evaluationScores từ dữ liệu đánh giá
         const scores: Record<string, number> = {};
         const descriptions: Record<string, string> = {};
-        const evaluators: Record<string, string> = {}; // Add this for evaluators
+        const evaluators: Record<string, string> = {};
 
         selectedEvaluation?.danh_sach_danh_gia?.forEach((tieuChi: any) => {
           tieuChi.tieu_muc.forEach((tieuMuc: any) => {
-            scores[tieuMuc.id_tieumuc] = tieuMuc.danh_gia;
+            if (tieuMuc.ghichu_danhgia) {
+              const danhGiaPairs = tieuMuc.ghichu_danhgia.split(',');
+              danhGiaPairs.forEach((pair: string) => {
+                const [id, score] = pair.split(':');
+                if (id && score) {
+                  scores[id] = parseInt(score);
+                }
+              });
+            }
 
             if (tieuMuc.mota_danhgia) {
               const motaEntries = tieuMuc.mota_danhgia.split(',');
@@ -166,30 +180,24 @@ const DetailsChiTieu: React.FC = () => {
               });
             }
 
-            if (tieuMuc.cac_tieu_muc_con) {
-              tieuMuc.cac_tieu_muc_con.forEach((tmc: any) => {
-                scores[tmc.id_tieumuccon] = tmc.danh_gia;
-                // Store the evaluator information if available
-                if (tmc.nguoi_danhgia) {
-                  evaluators[tmc.id_tieumuccon] = tmc.nguoi_danhgia;
+            if (tieuMuc.nguoi_danhgia) {
+              const evaluatorPairs = tieuMuc.nguoi_danhgia.split(',');
+              evaluatorPairs.forEach((pair: string) => {
+                const [id, name] = pair.split(':');
+                if (id && name) {
+                  evaluators[id] = name === 'none' ? '' : name || '';
                 }
-              });
-            }
-
-            if (tieuMuc.cac_tieu_muc_con) {
-              tieuMuc.cac_tieu_muc_con.forEach((tmc: any) => {
-                scores[tmc.id_tieumuccon] = tmc.danh_gia;
               });
             }
           });
         });
+
         setEvaluationScores(scores);
         setEvaluationDescriptions(descriptions);
-        setEvaluationEvaluators(evaluators); // Set the evaluators state
+        setEvaluationEvaluators(evaluators);
 
         let data = await DanhSachPhanQuyenTieuChi();
         if (data) {
-          // Tìm trong mảng phan_quyen của từng phần tử
           let tieuchicuakhoa = data
             .flatMap((item: any) =>
               item.phan_quyen.find(
@@ -197,7 +205,7 @@ const DetailsChiTieu: React.FC = () => {
                   phanquyen.ten_khoa === selectedEvaluation?.ten_khoa,
               ),
             )
-            .find(Boolean); // lấy phần tử đầu tiên khác null/undefined
+            .find(Boolean);
 
           if (
             tieuchicuakhoa &&
@@ -219,12 +227,31 @@ const DetailsChiTieu: React.FC = () => {
     }
   }, [dotId, messageApi]);
 
+  const showFileList = async (id_tieumuccon: string) => {
+    setSelectedTieuMucCon(id_tieumuccon);
+    setIsModalVisible(true);
+  };
+
+  const handleNoteClick = (id_tieumuccon: string) => {
+    setSelectedTieuMucCon(id_tieumuccon);
+    setTempNote(evaluationDescriptions[id_tieumuccon] || '');
+    setIsNoteModalVisible(true);
+  };
+
+  const handleSaveNote = () => {
+    setEvaluationDescriptions((prev) => ({
+      ...prev,
+      [selectedTieuMucCon]: tempNote,
+    }));
+    setIsNoteModalVisible(false);
+  };
+
   return (
     <>
       {contextHolder}
       {khoaPhong === 'Phòng Quản Lý chất lượng' ? (
         <>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 details-chitieu">
             {evaluationData && (
               <div className="mb-4">
                 <h2 className="text-lg md:text-xl lg:text-2xl font-bold">
@@ -235,400 +262,291 @@ const DetailsChiTieu: React.FC = () => {
                   Thời gian:{' '}
                   {formatDate(evaluationData.nhan_vien.split('-')[1]?.trim())}
                 </p>
-                {/* <p>
-                  Người đánh giá:{' '}
-                  {evaluationData.nhan_vien.split('-')[0]?.trim()}
-                </p> */}
               </div>
             )}
 
-            <div id="form-container">
-              <div id="levels-container">
-                {loadingDanhMuc === false ? (
-                  // Copy phần render criteria list từ DanhGiaTieuChiKhoaPhong
-                  // Nhưng chỉ hiển thị, không cho phép chỉnh sửa
-                  <>
-                    {danhSachTieuChiTheoKhoa &&
+            <div className="overflow-auto" style={{ maxWidth: '100%' }}>
+              <table
+                className="w-full border-collapse border"
+                style={{ tableLayout: 'fixed', minWidth: '768px' }}
+              >
+                <thead>
+                  <tr className="bg-gray-900 text-white">
+                    <th
+                      className="border p-3 text-center font-semibold bg-purple-800"
+                      style={{
+                        width: '65%',
+                        wordWrap: 'break-word',
+                        overflow: 'visible',
+                        whiteSpace: 'normal',
+                      }}
+                    >
+                      Nội dung
+                    </th>
+                    <th
+                      className="border p-3 text-center font-semibold bg-yellow-800"
+                      style={{ width: '6%' }}
+                    >
+                      Mức
+                    </th>
+                    <th
+                      className="border p-3 text-center font-semibold bg-green-800"
+                      style={{ width: '6%' }}
+                    >
+                      Đạt
+                    </th>
+                    <th
+                      className="border p-3 text-center font-semibold bg-red-800"
+                      style={{
+                        width: '6%',
+                        wordWrap: 'break-word',
+                        overflow: 'visible',
+                        whiteSpace: 'normal',
+                        maxWidth: '0',
+                      }}
+                    >
+                      Không đạt
+                    </th>
+                    <th
+                      className="border p-2 text-center font-semibold bg-blue-800"
+                      style={{ width: '17%' }}
+                    >
+                      Hành động
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loadingDanhMuc === false ? (
+                    danhSachTieuChiTheoKhoa &&
                     Array.isArray(danhSachTieuChiTheoKhoa) &&
                     danhSachTieuChiTheoKhoa.length > 0 ? (
                       danhSachTieuChiTheoKhoa
                         .filter((tc) => tc.hidden === 0)
-                        .map((existingData) => {
-                          const level1Id = existingData.so_tieuchi;
+                        .map((tieuChi) => (
+                          <Fragment key={tieuChi.id_tieuchi}>
+                            <tr className="bg-blue-700 text-white hover:bg-blue-800">
+                              <td
+                                className="border p-3 font-medium"
+                                style={{
+                                  wordWrap: 'break-word',
+                                  overflow: 'visible',
+                                  whiteSpace: 'normal',
+                                  maxWidth: '0',
+                                }}
+                                colSpan={5}
+                              >
+                                {tieuChi.ten_tieuchi}{' '}
+                                {tieuChi.mo_ta ? ` - ${tieuChi.mo_ta}` : ''}
+                              </td>
+                            </tr>
 
-                          return (
-                            <div
-                              key={`level-1-${level1Id}`}
-                              className="level"
-                              id={`level-1-${level1Id}`}
-                            >
-                              <h3 className="text-danger font-bold text-base md:text-lg">
-                                Tiêu chí - {level1Id}
-                              </h3>
-
-                              <div className="input-group flex flex-col md:flex-row gap-2 md:gap-4">
-                                <input
-                                  type="text"
-                                  placeholder="Số"
-                                  value={level1Id}
-                                  readOnly
-                                  className="h-10 w-full md:w-[8%]"
-                                />
-
-                                <input
-                                  type="text"
-                                  placeholder="Tên Tiêu chí"
-                                  id={`ten-tieuchi-cap1-${level1Id}`}
-                                  defaultValue={existingData?.ten_tieuchi || ''}
-                                  className="h-10 w-full md:w-[10%]"
-                                  readOnly
-                                />
-                                <textarea
-                                  id={`noidung-tieuchi-cap1-${level1Id}`}
-                                  className="w-full md:w-[70%] border rounded"
-                                  defaultValue={existingData?.mo_ta || ''}
-                                  rows={2}
-                                  // style={{
-                                  //   width: '70%',
-                                  //   // resize: 'none',
-                                  //   overflow: 'hidden',
-                                  //   verticalAlign: 'middle',
-                                  //   padding: '0 10px',
-                                  //   lineHeight: '2.8',
-                                  //   border: '1px solid #ced4da',
-                                  //   borderRadius: '0.25rem',
-                                  // }}
-                                  placeholder="Nội dung Tiêu chí"
-                                  readOnly
-                                ></textarea>
-                              </div>
-
-                              {existingData?.cac_tieu_muc &&
-                                Array.isArray(existingData?.cac_tieu_muc) &&
-                                existingData?.cac_tieu_muc
-                                  .filter((item) => item.hidden === 0)
-                                  .map((item, level2Index) => {
-                                    const level2Id = level2Index + 1;
-
-                                    const existingDataTieuMuc =
-                                      existingData?.cac_tieu_muc.find(
-                                        (tc) =>
-                                          tc.so_tieu_muc ===
-                                            item?.so_tieu_muc &&
-                                          tc.hidden === 0,
-                                      );
-
-                                    return (
-                                      <>
-                                        <div
-                                          key={`${level1Id}-${level2Id}`}
-                                          className="level"
-                                          id={`level-2-${level1Id}-${level2Id}`}
+                            {tieuChi.cac_tieu_muc &&
+                              Array.isArray(tieuChi.cac_tieu_muc) &&
+                              tieuChi.cac_tieu_muc
+                                .filter((tm) => tm.hidden === 0)
+                                .map((tieuMuc) => (
+                                  <Fragment key={tieuMuc.id_tieumuc}>
+                                    {tieuMuc.ten_tieu_muc && (
+                                      <tr className="bg-indigo-600 text-white hover:bg-indigo-700">
+                                        <td
+                                          className="border p-3 pl-8"
+                                          style={{
+                                            wordWrap: 'break-word',
+                                            overflow: 'visible',
+                                            whiteSpace: 'normal',
+                                            maxWidth: '0',
+                                          }}
+                                          colSpan={5}
                                         >
-                                          <h3 className="text-primary font-bold text-base md:text-lg">
-                                            Tiểu mục - {item?.so_tieu_muc}
-                                          </h3>
+                                          {tieuMuc.ten_tieu_muc}{' '}
+                                          {tieuMuc.mo_ta_tieu_muc
+                                            ? `- ${tieuMuc.mo_ta_tieu_muc}`
+                                            : ''}
+                                        </td>
+                                      </tr>
+                                    )}
 
-                                          <div className="input-group flex flex-col md:flex-row gap-2 md:gap-4">
-                                            <input
-                                              type="text"
-                                              placeholder="Số"
-                                              value={`${item?.so_tieu_muc}`}
-                                              readOnly
-                                              className="h-10 w-full md:w-[8%]"
-                                            />
-                                            <input
-                                              type="text"
-                                              placeholder="Tên Tiểu mục"
-                                              defaultValue={
-                                                item?.ten_tieu_muc || ''
-                                              }
-                                              id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                              className="h-10 w-full md:w-[10%]"
-                                              readOnly
-                                            />
-
-                                            <textarea
-                                              id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                              className="w-full md:w-[70%] border rounded"
-                                              defaultValue={
-                                                item?.mo_ta_tieu_muc || ''
-                                              }
-                                              rows={2}
-                                              // style={{
-                                              //   width: '70%',
-                                              //   // resize: 'none',
-                                              //   overflow: 'hidden',
-                                              //   verticalAlign: 'middle',
-                                              //   padding: '0 10px',
-                                              //   lineHeight: '2.8',
-                                              //   border: '1px solid #ced4da',
-                                              //   borderRadius: '0.25rem',
-                                              // }}
-                                              placeholder="Nội dung Tiểu mục"
-                                              readOnly
-                                            ></textarea>
-                                          </div>
-
-                                          {existingDataTieuMuc?.cac_tieu_muc_con &&
-                                            Array.isArray(
-                                              existingDataTieuMuc?.cac_tieu_muc_con,
-                                            ) &&
-                                            existingDataTieuMuc?.cac_tieu_muc_con
-                                              .filter(
-                                                (item) => item.hidden === 0,
-                                              )
-                                              .map((item, level3Index) => {
-                                                const level3Id =
-                                                  level3Index + 1;
-
-                                                return (
-                                                  <div
-                                                    key={`${level1Id}-${level2Id}-${level3Id}`}
-                                                    data-so-tieu-muc-con={
-                                                      item?.so_tieu_muc_con
-                                                    }
-                                                    className="level"
-                                                    id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
-                                                  >
-                                                    <h3 className="text-success font-bold text-base md:text-lg">
-                                                      Tiểu mục con -{' '}
-                                                      {item?.so_tieu_muc_con}
-                                                    </h3>
-
-                                                    <div
-                                                      className="input-group flex flex-col md:flex-row gap-2 md:gap-4"
-                                                      key={
-                                                        item?.so_tieu_muc_con
-                                                      }
-                                                    >
-                                                      <input
-                                                        type="text"
-                                                        placeholder="Số"
-                                                        value={`${item?.so_tieu_muc_con}`}
-                                                        readOnly
-                                                        className="h-10 w-full md:w-[8%]"
-                                                      />
-                                                      <input
-                                                        type="text"
-                                                        placeholder="Tên Tiểu mục con"
-                                                        id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                        defaultValue={
-                                                          item?.ten_tieu_muc_con
-                                                            ? item?.ten_tieu_muc_con
-                                                            : ''
-                                                        }
-                                                        className="h-10 w-full md:w-[10%]"
-                                                        readOnly
-                                                      />
-                                                      <input
-                                                        className="h-10 w-full md:w-[10%] border rounded"
-                                                        type="number"
-                                                        min={1}
-                                                        placeholder="Mức"
-                                                        id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                        defaultValue={
-                                                          item?.muc
-                                                            ? item?.muc
-                                                            : ''
-                                                        }
-                                                        onInput={(e: any) => {
-                                                          if (
-                                                            e.target.value <= 1
-                                                          )
-                                                            e.target.value = 1;
-                                                        }}
-                                                        readOnly
-                                                      />
-                                                      <textarea
-                                                        id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                                        className="w-full md:w-[70%] border rounded"
-                                                        defaultValue={
-                                                          item?.mo_ta_tieu_muc_con
-                                                            ? item?.mo_ta_tieu_muc_con
-                                                            : ''
-                                                        }
-                                                        rows={2}
-                                                        // style={{
-                                                        //   width: '55%',
-                                                        //   // resize: 'none',
-                                                        //   overflow: 'hidden',
-                                                        //   verticalAlign:
-                                                        //     'middle',
-                                                        //   padding: '10px 10px',
-                                                        //   lineHeight: '1.5',
-                                                        //   border:
-                                                        //     '1px solid #ced4da',
-                                                        //   borderRadius:
-                                                        //     '0.25rem',
-                                                        // }}
-                                                        placeholder="Nội dung Tiểu mục con"
-                                                        readOnly
-                                                      ></textarea>
-
-                                                      <div className="h-10 mt-2 md:mt-0 md:ml-2 flex flex-col md:flex-row items-start md:items-center">
-                                                        <span className="font-bold mr-2">
-                                                          Đánh giá:
-                                                        </span>
-                                                        <span
-                                                          className={`font-bold ${
-                                                            evaluationScores[
-                                                              item?.id_tieumuccon
-                                                            ] === 1
-                                                              ? 'text-success'
-                                                              : 'text-danger'
-                                                          }`}
-                                                        >
-                                                          {evaluationScores[
-                                                            item?.id_tieumuccon
-                                                          ] === 1
-                                                            ? 'Đạt'
-                                                            : 'Không đạt'}
-                                                        </span>
-                                                      </div>
-                                                    </div>
-                                                    <div className="mt-4">
-                                                      {evaluationDescriptions[
-                                                        item?.id_tieumuccon
-                                                      ] ? (
-                                                        <div className="mb-4">
-                                                          <h4 className="font-bold mb-2">
-                                                            Ghi chú đánh giá:
-                                                          </h4>
-                                                          <div className="bg-gray-100 rounded">
-                                                            {
-                                                              evaluationDescriptions[
-                                                                item?.id_tieumuccon
-                                                              ]
-                                                            }
-                                                          </div>
-                                                        </div>
-                                                      ) : (
-                                                        <div className="mb-4">
-                                                          <h4 className="font-bold mb-2">
-                                                            Ghi chú đánh giá:
-                                                          </h4>
-                                                          <div className="bg-gray-100 rounded">
-                                                            Không có ghi chú
-                                                          </div>
-                                                        </div>
-                                                      )}
-
-                                                      {/* <div className="mt-2">
-                                                        {evaluationEvaluators[
-                                                          item?.id_tieumuccon
-                                                        ] ? (
-                                                          <div className="flex items-center">
-                                                            <span className="font-bold mr-2">
-                                                              Người đánh giá:
-                                                            </span>
-                                                            <span>
-                                                              {
-                                                                evaluationEvaluators[
-                                                                  item?.id_tieumuccon
-                                                                ]
-                                                              }
-                                                            </span>
-                                                          </div>
-                                                        ) : (
-                                                          <>
-                                                            <h4 className="font-bold mr-2">
-                                                              Người đánh giá:
-                                                            </h4>
-                                                            <span>
-                                                              Không có thông tin
-                                                            </span>
-                                                          </>
-                                                        )}
-                                                      </div> */}
-
-                                                      {fileList[
-                                                        item?.id_tieumuccon
-                                                      ]?.length > 0 && (
-                                                        <>
-                                                          <h4 className="font-bold mb-2">
-                                                            Danh sách file đính
-                                                            kèm:
-                                                          </h4>
-                                                          <div className="space-y-2">
-                                                            {fileList[
-                                                              item?.id_tieumuccon
-                                                            ].map(
-                                                              (file: any) => (
-                                                                <div
-                                                                  key={
-                                                                    file.file_id
-                                                                  }
-                                                                  className="flex items-center gap-4"
-                                                                >
-                                                                  <span>
-                                                                    {
-                                                                      file.filename
-                                                                    }
-                                                                  </span>
-                                                                  <button
-                                                                    onClick={() =>
-                                                                      handleDownload(
-                                                                        file.file_id,
-                                                                        file.filename,
-                                                                      )
-                                                                    }
-                                                                    className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/80"
-                                                                  >
-                                                                    <DownloadOutlined />{' '}
-                                                                    Tải về
-                                                                  </button>
-                                                                </div>
-                                                              ),
-                                                            )}
-                                                          </div>
-                                                        </>
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                );
-                                              })}
-                                        </div>
-                                      </>
-                                    );
-                                  })}
-                            </div>
-                          );
-                        })
+                                    {tieuMuc.cac_tieu_muc_con &&
+                                      Array.isArray(tieuMuc.cac_tieu_muc_con) &&
+                                      tieuMuc.cac_tieu_muc_con
+                                        .filter((tmc) => tmc.hidden === 0)
+                                        .map((tieuMucCon) => (
+                                          <tr
+                                            key={tieuMucCon.id_tieumuccon}
+                                            className="bg-teal-600 text-white hover:bg-teal-700"
+                                          >
+                                            <td
+                                              className="border p-3 pl-12 text-left"
+                                              style={{
+                                                wordWrap: 'break-word',
+                                                overflow: 'visible',
+                                                whiteSpace: 'normal',
+                                                maxWidth: '0',
+                                              }}
+                                            >
+                                              {tieuMucCon.ten_tieu_muc_con}{' '}
+                                              {tieuMucCon.mo_ta_tieu_muc_con
+                                                ? ` - ${tieuMucCon.mo_ta_tieu_muc_con}`
+                                                : ''}
+                                            </td>
+                                            <td className="border p-3 text-center">
+                                              {tieuMucCon.muc}
+                                            </td>
+                                            <td className="border p-3 text-center">
+                                              <input
+                                                type="checkbox"
+                                                checked={
+                                                  evaluationScores[
+                                                    tieuMucCon.id_tieumuccon
+                                                  ] === 1
+                                                }
+                                                disabled
+                                                className="accent-green-500"
+                                              />
+                                            </td>
+                                            <td className="border p-3 text-center">
+                                              <input
+                                                type="checkbox"
+                                                checked={
+                                                  evaluationScores[
+                                                    tieuMucCon.id_tieumuccon
+                                                  ] === 0
+                                                }
+                                                disabled
+                                                className="accent-red-500"
+                                              />
+                                            </td>
+                                            <td className="border p-2 text-center">
+                                              <div className="flex justify-center space-x-1 sm:space-x-2">
+                                                <button
+                                                  className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm sm:text-base transition-colors duration-200"
+                                                  onClick={() =>
+                                                    showFileList(
+                                                      tieuMucCon.id_tieumuccon,
+                                                    )
+                                                  }
+                                                  title="Xem file đính kèm"
+                                                >
+                                                  <EyeOutlined />
+                                                </button>
+                                                <button
+                                                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-sm sm:text-base transition-colors duration-200"
+                                                  title="Xem ghi chú"
+                                                  onClick={() =>
+                                                    handleNoteClick(
+                                                      tieuMucCon.id_tieumuccon,
+                                                    )
+                                                  }
+                                                >
+                                                  <CommentOutlined />
+                                                </button>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                  </Fragment>
+                                ))}
+                          </Fragment>
+                        ))
                     ) : (
-                      <>
-                        {' '}
-                        <div className="text-center text-lg font-medium">
+                      <tr>
+                        <td colSpan={5} className="border p-4 text-center">
                           Không tìm thấy tiêu chí nào
+                        </td>
+                      </tr>
+                    )
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="border p-4 text-center">
+                        <div className="flex justify-center items-center">
+                          <LoadingOutlined
+                            style={{ fontSize: '24px' }}
+                            className="mr-2"
+                          />{' '}
+                          Đang tải dữ liệu...
                         </div>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center">
-                    <LoadingOutlined style={{ fontSize: '50px' }} />
-                  </div>
-                )}
-              </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </>
       ) : (
-        <>
-          <Result
-            status="403"
-            title="403"
-            subTitle="Bạn không có quyền truy cập trang này"
-            extra={
-              <Link to={'/danh-sach-tieu-chi'}>
-                <button className="hover:bg-primary bg-primary p-2 text-white rounded">
-                  Quay lại trang chủ
-                </button>
-              </Link>
-            }
-          />
-        </>
+        <Result
+          status="403"
+          title="403"
+          subTitle="Bạn không có quyền truy cập trang này"
+          extra={
+            <Link to={'/danh-sach-tieu-chi'}>
+              <button className="hover:bg-primary bg-primary p-2 text-white rounded">
+                Quay lại trang chủ
+              </button>
+            </Link>
+          }
+        />
       )}
+
+      <Modal
+        title={`Danh sách file đã tải lên`}
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        {selectedTieuMucCon && (
+          <>
+            {fileList[selectedTieuMucCon]?.length > 0 ? (
+              <List
+                dataSource={fileList[selectedTieuMucCon]}
+                renderItem={(item) => (
+                  <List.Item
+                    key={item.file_id}
+                    actions={[
+                      <span
+                        title="Tải file về"
+                        onClick={() =>
+                          handleDownload(item.file_id, item.filename)
+                        }
+                        className="text-primary hover:text-primary-dark cursor-pointer"
+                      >
+                        <DownloadOutlined />
+                      </span>,
+                    ]}
+                  >
+                    <div>{item.filename}</div>
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <div className="text-center">Không có file nào được tải lên</div>
+            )}
+          </>
+        )}
+      </Modal>
+
+      <Modal
+        title="Ghi chú đánh giá"
+        open={isNoteModalVisible}
+        onCancel={() => setIsNoteModalVisible(false)}
+        footer={[
+          <button
+            key="close"
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+            onClick={() => setIsNoteModalVisible(false)}
+          >
+            Đóng
+          </button>,
+        ]}
+        width={600}
+      >
+        <div className="p-4 bg-gray-50 rounded">
+          <p className="whitespace-pre-wrap">
+            {tempNote || 'Không có ghi chú'}
+          </p>
+        </div>
+      </Modal>
     </>
   );
 };
