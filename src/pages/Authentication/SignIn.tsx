@@ -61,7 +61,7 @@ const SignIn: React.FC = () => {
       if (res) {
         let info = await res.json();
 
-        setLayThongTin(null);
+        setLayThongTin(info || null);
       }
     } catch (error) {
       console.log(error);
