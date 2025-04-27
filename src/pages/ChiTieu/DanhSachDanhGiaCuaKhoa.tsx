@@ -270,7 +270,8 @@ const DanhSachDanhGiaCuaKhoa = () => {
 
   return (
     <>
-      {khoaPhong === 'Phòng Quản Lý chất lượng' ? (
+      {khoaPhong === 'Phòng Quản Lý chất lượng' ||
+      khoaPhong === 'Phòng Công Nghệ Thông Tin' ? (
         <>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="font-bold mb-4 text-xl sm:text-2xl">

@@ -214,7 +214,10 @@ const ChiTieuTheoKhoa: React.FC = () => {
                       danhSachTieuChiTheoKhoa.length > 0 ? (
                         <>
                           {danhSachTieuChiTheoKhoa
-                            .filter((tc) => tc.hidden === 0)
+                            .filter(
+                              (tc) =>
+                                tc.hidden === 0 || tc.hidden === undefined,
+                            )
                             .map((tieuChi) => (
                               <Fragment key={tieuChi.id_tieuchi}>
                                 <tr className="bg-blue-700 text-white hover:bg-blue-800">
@@ -236,7 +239,11 @@ const ChiTieuTheoKhoa: React.FC = () => {
                                 {tieuChi.cac_tieu_muc &&
                                   Array.isArray(tieuChi.cac_tieu_muc) &&
                                   tieuChi.cac_tieu_muc
-                                    .filter((tm) => tm.hidden === 0)
+                                    .filter(
+                                      (tm) =>
+                                        tm.hidden === 0 ||
+                                        tm.hidden === undefined,
+                                    )
                                     .map((tieuMuc) => (
                                       <Fragment key={tieuMuc.id_tieumuc}>
                                         {tieuMuc.ten_tieu_muc && (
@@ -264,7 +271,11 @@ const ChiTieuTheoKhoa: React.FC = () => {
                                             tieuMuc.cac_tieu_muc_con,
                                           ) &&
                                           tieuMuc.cac_tieu_muc_con
-                                            .filter((tmc) => tmc.hidden === 0)
+                                            .filter(
+                                              (tmc) =>
+                                                tmc.hidden === 0 ||
+                                                tmc.hidden === undefined,
+                                            )
                                             .map((tieuMucCon) => (
                                               <tr
                                                 key={tieuMucCon.id_tieumuccon}

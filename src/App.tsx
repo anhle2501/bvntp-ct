@@ -181,7 +181,8 @@ function App() {
           path="/"
           element={
             <>
-              {khoaPhong === 'Phòng Quản Lý chất lượng' ? (
+              {khoaPhong === 'Phòng Quản Lý chất lượng' ||
+              khoaPhong === 'Phòng Công Nghệ Thông Tin' ? (
                 <>
                   <PageTitle title="Quản lý tiêu chí | NTP" />
                   <ChiTieuCap1 />

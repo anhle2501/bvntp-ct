@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from 'react';
 import './ChiTieuCap1.css';
 import { message, Popconfirm, Result } from 'antd';
@@ -20,6 +21,362 @@ import {
   ThemTieuMucCon,
 } from '../../api/ChiTieuAPI';
 import { Link, useNavigate } from 'react-router-dom';
+
+// Component input/textarea tối ưu re-render
+const EditableCell = React.memo(
+  ({
+    value,
+    onChange,
+    type = 'input',
+    ...props
+  }: {
+    value: string;
+    onChange: (e: any) => void;
+    type?: string;
+    [key: string]: any;
+  }) => {
+    if (type === 'textarea') {
+      return (
+        <textarea
+          value={value}
+          onChange={onChange}
+          className="w-full break-words box-border p-0"
+          rows={2}
+          style={{ width: '100%' }}
+          {...props}
+        />
+      );
+    }
+    return (
+      <input
+        value={value}
+        onChange={onChange}
+        className="w-full box-border p-0 h-full border-none"
+        style={{ height: '100%', width: '100%' }}
+        {...props}
+      />
+    );
+  },
+);
+
+// Component hàng tiêu chí (cấp 1)
+const EditableRow = React.memo(
+  ({
+    level1Id,
+    tieuChi,
+    isLoadingTieuChi,
+    currentLoadingButtonTieuChi,
+    onLuu,
+    onThemTieuMuc,
+    children,
+  }: any) => {
+    const [ten, setTen] = React.useState(tieuChi?.ten_tieuchi ?? '');
+    const [mota, setMota] = React.useState(tieuChi?.mo_ta ?? '');
+    React.useEffect(() => {
+      setTen(tieuChi?.ten_tieuchi ?? '');
+      setMota(tieuChi?.mo_ta ?? '');
+    }, [tieuChi]);
+    return (
+      <>
+        <tr className="align-top font-bold text-blue-700">
+          <td className="border px-0 py-0 text-center w-12">
+            <div className="flex flex-col items-center">
+              <span>{level1Id}</span>
+            </div>
+          </td>
+          <td className="border px-0 py-0 break-words w-24">
+            <EditableCell
+              value={ten}
+              onChange={(e) => setTen(e.target.value)}
+            />
+          </td>
+          <td
+            className="border px-2 py-1 break-words"
+            style={{ wordBreak: 'break-word', whiteSpace: 'pre-line' }}
+          >
+            <EditableCell
+              value={mota}
+              onChange={(e) => setMota(e.target.value)}
+              type="textarea"
+            />
+          </td>
+          <td className="border px-0 py-0 text-center w-20"></td>
+          <td className="border px-0 py-0 text-center align-middle w-28">
+            <div className="flex flex-row gap-1 items-center justify-center">
+              <button
+                title="Lưu tiêu chí"
+                className={`flex items-center justify-center rounded bg-primary p-2 text-white hover:bg-opacity-90 ${
+                  isLoadingTieuChi ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                onClick={() => onLuu(level1Id, tieuChi)}
+                disabled={isLoadingTieuChi}
+              >
+                {currentLoadingButtonTieuChi === 'luutieuchi' ? (
+                  <LoadingOutlined />
+                ) : (
+                  <SaveFilled />
+                )}
+              </button>
+              {tieuChi && (
+                <button
+                  title="Thêm tiểu mục"
+                  className={`flex items-center justify-center rounded bg-success p-2 text-white hover:bg-opacity-90 ${
+                    isLoadingTieuChi ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  onClick={onThemTieuMuc}
+                  disabled={isLoadingTieuChi}
+                >
+                  {currentLoadingButtonTieuChi === 'themtieumuc' ? (
+                    <LoadingOutlined />
+                  ) : (
+                    <PlusCircleFilled />
+                  )}
+                </button>
+              )}
+            </div>
+          </td>
+        </tr>
+        {children}
+      </>
+    );
+  },
+);
+
+// Component hàng tiểu mục (cấp 2)
+const EditableSubRow = React.memo(
+  ({
+    level1Id,
+    level2Id,
+    tm,
+    isLoadingTieuMuc,
+    currentLoadingButtonTieuMuc,
+    onLuu,
+    onXoa,
+    onThemTieuMucCon,
+    children,
+  }: any) => {
+    const [ten, setTen] = React.useState(tm.ten_tieu_muc ?? '');
+    const [mota, setMota] = React.useState(tm.mo_ta_tieu_muc ?? '');
+    React.useEffect(() => {
+      setTen(tm.ten_tieu_muc ?? '');
+      setMota(tm.mo_ta_tieu_muc ?? '');
+    }, [tm]);
+    return (
+      <>
+        <tr className="align-top text-green-700">
+          <td className="border px-0 py-0 w-12">
+            <div className="flex flex-col items-center">
+              <span className="text-sm">
+                {level1Id}.{level2Id}
+              </span>
+            </div>
+          </td>
+          <td className="border px-0 py-0 break-words w-24">
+            <EditableCell
+              value={ten}
+              onChange={(e) => setTen(e.target.value)}
+            />
+          </td>
+          <td
+            className="border px-2 py-1 break-words"
+            style={{ wordBreak: 'break-word', whiteSpace: 'pre-line' }}
+          >
+            <EditableCell
+              value={mota}
+              onChange={(e) => setMota(e.target.value)}
+              type="textarea"
+            />
+          </td>
+          <td className="border px-0 py-0 text-center w-20"></td>
+          <td className="border px-0 py-0 text-center align-middle w-28">
+            <div className="flex flex-row gap-1 items-center justify-center">
+              <button
+                title="Lưu tiểu mục"
+                className={`flex items-center justify-center rounded bg-primary p-2 text-white hover:bg-opacity-90 ${
+                  isLoadingTieuMuc ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                onClick={() => onLuu(level2Id, tm)}
+                disabled={isLoadingTieuMuc}
+              >
+                {currentLoadingButtonTieuMuc === 'luutieumuc' ? (
+                  <LoadingOutlined />
+                ) : (
+                  <SaveFilled />
+                )}
+              </button>
+              {(!tm.cac_tieu_muc_con ||
+                tm.cac_tieu_muc_con.filter(
+                  (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
+                ).length === 0) && (
+                <Popconfirm
+                  title="Xóa tiểu mục"
+                  description="Bạn có chắc chắn muốn xóa tiểu mục này không?"
+                  icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                  onConfirm={onXoa}
+                  okButtonProps={{ className: 'bg-blue-500 hover:bg-blue-600' }}
+                  okText="Xóa"
+                  cancelText="Không"
+                >
+                  <button
+                    title="Xóa tiểu mục"
+                    className={`flex items-center justify-center rounded bg-danger p-2 text-white hover:bg-opacity-90 ${
+                      isLoadingTieuMuc ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    disabled={isLoadingTieuMuc}
+                  >
+                    {currentLoadingButtonTieuMuc === 'xoatieumuc' ? (
+                      <LoadingOutlined />
+                    ) : (
+                      <DeleteFilled />
+                    )}
+                  </button>
+                </Popconfirm>
+              )}
+              {ten !== '' && mota !== '' && (
+                <button
+                  title="Thêm tiểu mục con"
+                  className={`flex items-center justify-center rounded bg-success p-2 text-white hover:bg-opacity-90 ${
+                    isLoadingTieuMuc ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  onClick={onThemTieuMucCon}
+                  disabled={isLoadingTieuMuc}
+                >
+                  {currentLoadingButtonTieuMuc === 'themtieumuccon' ? (
+                    <LoadingOutlined />
+                  ) : (
+                    <PlusCircleFilled />
+                  )}
+                </button>
+              )}
+            </div>
+          </td>
+        </tr>
+        {children}
+      </>
+    );
+  },
+);
+
+// Component hàng tiểu mục con (cấp 3)
+const EditableSubSubRow = React.memo(
+  ({
+    level1Id,
+    level2Id,
+    level3Id,
+    tm,
+    tmc,
+    isLoadingTieuMucCon,
+    currentLoadingButtonTieuMucCon,
+    onLuu,
+    onXoa,
+    onChenThem,
+  }: any) => {
+    const [ten, setTen] = React.useState(tmc.ten_tieu_muc_con ?? '');
+    const [mota, setMota] = React.useState(tmc.mo_ta_tieu_muc_con ?? '');
+    const [muc, setMuc] = React.useState(tmc.muc ?? '');
+    React.useEffect(() => {
+      setTen(tmc.ten_tieu_muc_con ?? '');
+      setMota(tmc.mo_ta_tieu_muc_con ?? '');
+      setMuc(tmc.muc ?? '');
+    }, [tmc]);
+    return (
+      <tr className="align-top text-purple-700">
+        <td className="border px-0 py-0 w-12">
+          <div className="flex flex-col items-center">
+            <span className="text-sm">
+              {level1Id}.{level2Id}.{level3Id}
+            </span>
+          </div>
+        </td>
+        <td className="border px-0 py-0 break-words w-24">
+          <EditableCell value={ten} onChange={(e) => setTen(e.target.value)} />
+        </td>
+        <td
+          className="border px-2 py-1 break-words"
+          style={{ wordBreak: 'break-word', whiteSpace: 'pre-line' }}
+        >
+          <EditableCell
+            value={mota}
+            onChange={(e) => setMota(e.target.value)}
+            type="textarea"
+          />
+        </td>
+        <td className="border px-0 py-0 text-center w-20">
+          <EditableCell
+            value={muc}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === '' || (/^\d+$/.test(val) && Number(val) >= 1)) {
+                setMuc(val);
+              }
+            }}
+            className="text-center"
+            type="number"
+            min={1}
+            step={1}
+          />
+        </td>
+        <td className="border px-0 py-0 text-center align-middle w-28">
+          <div className="flex flex-row gap-1 items-center justify-center">
+            <button
+              title="Lưu tiểu mục con"
+              className={`flex items-center justify-center rounded bg-primary p-2 text-white hover:bg-opacity-90 ${
+                isLoadingTieuMucCon ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              onClick={() => onLuu(level3Id, tmc)}
+              disabled={isLoadingTieuMucCon}
+            >
+              {currentLoadingButtonTieuMucCon === 'luutieumuccon' ? (
+                <LoadingOutlined />
+              ) : (
+                <SaveFilled />
+              )}
+            </button>
+            <Popconfirm
+              title="Xóa tiểu mục con"
+              description="Bạn có chắc chắn muốn xóa tiểu mục con này không?"
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              onConfirm={onXoa}
+              okButtonProps={{ className: 'bg-blue-500 hover:bg-blue-600' }}
+              okText="Xóa"
+              cancelText="Không"
+            >
+              <button
+                title="Xóa tiểu mục con"
+                className={`flex items-center justify-center rounded bg-danger p-2 text-white hover:bg-opacity-90 ${
+                  isLoadingTieuMucCon ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={isLoadingTieuMucCon}
+              >
+                {currentLoadingButtonTieuMucCon === 'xoatieumuccon' ? (
+                  <LoadingOutlined />
+                ) : (
+                  <DeleteFilled />
+                )}
+              </button>
+            </Popconfirm>
+            {ten !== '' && mota !== '' && muc !== '' && (
+              <button
+                title="Chèn thêm tiểu mục con"
+                className={`flex items-center justify-center rounded bg-success p-2 text-white hover:bg-opacity-90 ${
+                  isLoadingTieuMucCon ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                onClick={onChenThem}
+                disabled={isLoadingTieuMucCon}
+              >
+                {currentLoadingButtonTieuMucCon === 'chenthemtieumuccon' ? (
+                  <LoadingOutlined />
+                ) : (
+                  <PlusCircleFilled />
+                )}
+              </button>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  },
+);
 
 const ChiTieuCap1: React.FC = () => {
   const [dataTieuChi, setDataTieuChi] = useState<DanhMuc[]>([]);
@@ -55,6 +412,8 @@ const ChiTieuCap1: React.FC = () => {
   const [decodeWorkerDangNhap] = useState(
     () => new Worker('./decodeWorkerDangNhap.js'),
   );
+
+  const [editData, setEditData] = useState<Record<string, string>>({});
 
   const handleDecodeDangNhap = (encodedString: any) => {
     return new Promise((resolve, reject) => {
@@ -143,17 +502,11 @@ const ChiTieuCap1: React.FC = () => {
     fetchDataTieuChi();
   }, [status]);
 
-  const luuTieuChi = async (level1Id: number) => {
-    const tenTieuchi = (
-      document.getElementById(
-        `ten-tieuchi-cap1-${level1Id}`,
-      ) as HTMLInputElement
-    )?.value;
-    const noidungTieuchi = (
-      document.getElementById(
-        `noidung-tieuchi-cap1-${level1Id}`,
-      ) as HTMLInputElement
-    )?.value;
+  const luuTieuChi = async (level1Id: number, tieuChi?: any) => {
+    const tenTieuchi =
+      editData[`tieuchi-${level1Id}-ten`] ?? tieuChi?.ten_tieuchi ?? '';
+    const noidungTieuchi =
+      editData[`tieuchi-${level1Id}-mota`] ?? tieuChi?.mo_ta ?? '';
 
     if (tenTieuchi?.trim() !== '' && noidungTieuchi?.trim() !== '') {
       const tieuchiDataPost = {
@@ -170,6 +523,7 @@ const ChiTieuCap1: React.FC = () => {
         mo_ta: noidungTieuchi,
         hidden: 0,
       };
+
       const key = level1Id;
       setLoadingTieuChiButtons((prev) => ({ ...prev, [key]: 'luutieuchi' }));
       try {
@@ -183,6 +537,7 @@ const ChiTieuCap1: React.FC = () => {
 
           setStatus('TieuChi');
         }
+
         messageApi.open({
           type: 'success',
           content: `Tiêu chí số ${level1Id} đã được lưu.`,
@@ -285,13 +640,17 @@ const ChiTieuCap1: React.FC = () => {
       let existingData = dataTieuChi.find((tc) => tc.so_tieuchi === level1Id);
       if (existingData) {
         const newSoTieuMuc = findNextAvailableSoTieuMuc(
-          existingData.cac_tieu_muc.filter((tm) => tm.hidden === 0),
+          existingData.cac_tieu_muc.filter(
+            (tm) => tm.hidden === 0 || tm.hidden === undefined,
+          ),
           level1Id,
         );
 
         // Kiểm tra xem số tiểu mục mới đã tồn tại chưa
         const existingTieuMuc = existingData.cac_tieu_muc.find(
-          (tm) => tm.so_tieu_muc === newSoTieuMuc && tm.hidden === 0,
+          (tm) =>
+            tm.so_tieu_muc === newSoTieuMuc &&
+            (tm.hidden === 0 || tm.hidden === undefined),
         );
 
         if (existingTieuMuc) {
@@ -303,6 +662,7 @@ const ChiTieuCap1: React.FC = () => {
             cac_tieu_muc_con: [],
             hidden: 0,
           };
+
           await LuuTieuMucMoi(newTieuMuc, existingData?.id_tieuchi);
         } else {
           // Nếu chưa tồn tại, tạo mới như bình thường
@@ -314,6 +674,7 @@ const ChiTieuCap1: React.FC = () => {
             cac_tieu_muc_con: [],
             hidden: 0,
           };
+
           await LuuTieuMucMoi(tieumucDataPost, existingData?.id_tieuchi);
         }
 
@@ -333,28 +694,19 @@ const ChiTieuCap1: React.FC = () => {
   const luuTieuMuc = async (
     level1Id: number,
     level2Id: number,
-    sotieumuc: string | undefined,
+    tenTieumuc: string,
+    noidungTieumuc: string,
+    sotieumuc: string,
+    id_tieumuc: string,
+    existingData2?: any,
   ) => {
-    const tenTieumuc = (
-      document.getElementById(
-        `ten-tieumuc-cap2-${level1Id}-${level2Id}`,
-      ) as HTMLInputElement
-    )?.value;
-    const noidungTieumuc = (
-      document.getElementById(
-        `noidung-tieumuc-cap2-${level1Id}-${level2Id}`,
-      ) as HTMLInputElement
-    )?.value;
-
     if (!sotieumuc) {
       messageApi.open({
         type: 'error',
         content: `Số tiểu mục không tìm thấy. Vui lòng thử lại`,
       });
-
       return;
     }
-
     if (tenTieumuc?.trim() !== '' && noidungTieumuc?.trim() !== '') {
       const key = sotieumuc;
       setLoadingTieuMucButtons((prev) => ({ ...prev, [key]: 'luutieumuc' }));
@@ -461,6 +813,10 @@ const ChiTieuCap1: React.FC = () => {
             );
             setStatus('ThemTieuMucCon');
           }
+          messageApi.open({
+            type: 'success',
+            content: `Thêm tiểu mục con thành công.`,
+          });
         } else {
           throw new Error('Không tìm thấy tiêu mục cấp 2');
         }
@@ -501,12 +857,13 @@ const ChiTieuCap1: React.FC = () => {
         if (existingData2) {
           const currentIndex = existingData2.cac_tieu_muc_con.findIndex(
             (tmc: any) =>
-              tmc.so_tieu_muc_con === currentSoTieuMucCon && tmc.hidden === 0,
+              tmc.so_tieu_muc_con === currentSoTieuMucCon &&
+              (tmc.hidden === 0 || tmc.hidden === undefined),
           );
 
           let newSoTieuMucCon = incrementLastNumber(currentSoTieuMucCon);
           const nextTieuMucCon = existingData2.cac_tieu_muc_con.filter(
-            (tmc: any) => tmc.hidden === 0,
+            (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
           )[currentIndex + 1];
 
           if (
@@ -515,7 +872,9 @@ const ChiTieuCap1: React.FC = () => {
           ) {
             // Nếu số tiếp theo đã tồn tại, cập nhật các số phía sau
             const updatePromises = existingData2.cac_tieu_muc_con
-              .filter((tmc: any) => tmc.hidden === 0)
+              .filter(
+                (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
+              )
               .slice(currentIndex + 1)
               .map((tmc: any) => {
                 const updatedSoTieuMucCon = incrementLastNumber(
@@ -586,7 +945,9 @@ const ChiTieuCap1: React.FC = () => {
                 }
                 // Sử dụng newTieuMucConWithId thay vì truy cập trực tiếp addedTieuMucCon.id_tieumuccon
                 tieuMuc.cac_tieu_muc_con
-                  .filter((tmc: any) => tmc.hidden === 0)
+                  .filter(
+                    (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
+                  )
                   .splice(currentIndex + 1, 0, newTieuMucConWithId);
               }
             }
@@ -595,6 +956,10 @@ const ChiTieuCap1: React.FC = () => {
 
           setForceUpdate(Date.now());
           setStatus('ChenThemTieuMucCon');
+          messageApi.open({
+            type: 'success',
+            content: `Chèn tiểu mục con thành công.`,
+          });
         }
       }
     } catch (error) {
@@ -619,25 +984,14 @@ const ChiTieuCap1: React.FC = () => {
     level1Id: number,
     level2Id: number,
     level3Id: number,
+    tenTieumuccon: string,
+    noidungTieumuccon: string,
+    mucTieumuccon: string,
     sotieumuc: string,
     sotieumuccon: string,
+    id_tieumuccon: string,
+    existingData3?: any,
   ) => {
-    const tenTieumuccon = (
-      document.getElementById(
-        `ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`,
-      ) as HTMLInputElement
-    )?.value;
-    const noidungTieumuccon = (
-      document.getElementById(
-        `noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`,
-      ) as HTMLInputElement
-    )?.value;
-    const mucTieumuccon = (
-      document.getElementById(
-        `muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`,
-      ) as HTMLInputElement
-    )?.value;
-
     if (
       tenTieumuccon?.trim() !== '' &&
       noidungTieumuccon?.trim() !== '' &&
@@ -732,7 +1086,9 @@ const ChiTieuCap1: React.FC = () => {
 
           // Lấy các tiểu mục còn hiển thị và nằm sau tiểu mục vừa xóa
           const remainingTieuMuc = existingData.cac_tieu_muc.filter(
-            (tm) => tm.so_tieu_muc > sotieumuc && tm.hidden === 0,
+            (tm) =>
+              tm.so_tieu_muc > sotieumuc &&
+              (tm.hidden === 0 || tm.hidden === undefined),
           );
 
           // Nếu có tiểu mục nằm dưới, cập nhật số của chúng
@@ -783,7 +1139,10 @@ const ChiTieuCap1: React.FC = () => {
                   i < tieuChi.cac_tieu_muc.length;
                   i++
                 ) {
-                  if (tieuChi.cac_tieu_muc[i].hidden === 0) {
+                  if (
+                    tieuChi.cac_tieu_muc[i].hidden === 0 ||
+                    tieuChi.cac_tieu_muc[i].hidden === undefined
+                  ) {
                     const parts =
                       tieuChi.cac_tieu_muc[i].so_tieu_muc.split('.');
                     parts[parts.length - 1] = (
@@ -853,7 +1212,9 @@ const ChiTieuCap1: React.FC = () => {
 
             // Lấy các tiểu mục con còn hiển thị và nằm sau tiểu mục vừa xóa
             const remainingTieuMucCon = existingData2.cac_tieu_muc_con.filter(
-              (tmc) => tmc.so_tieu_muc_con > sotieumuccon && tmc.hidden === 0,
+              (tmc) =>
+                tmc.so_tieu_muc_con > sotieumuccon &&
+                (tmc.hidden === 0 || tmc.hidden === undefined),
             );
 
             // Nếu có tiểu mục con nằm dưới, cập nhật số của chúng
@@ -907,7 +1268,10 @@ const ChiTieuCap1: React.FC = () => {
                       i < tieuMuc.cac_tieu_muc_con.length;
                       i++
                     ) {
-                      if (tieuMuc.cac_tieu_muc_con[i].hidden === 0) {
+                      if (
+                        tieuMuc.cac_tieu_muc_con[i].hidden === 0 ||
+                        tieuMuc.cac_tieu_muc_con[i].hidden === undefined
+                      ) {
                         const parts =
                           tieuMuc.cac_tieu_muc_con[i].so_tieu_muc_con.split(
                             '.',
@@ -960,459 +1324,184 @@ const ChiTieuCap1: React.FC = () => {
   return (
     <>
       {contextHolder}
-      {khoaPhong === 'Phòng Quản Lý chất lượng' ? (
-        <>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4">
-              Danh mục
-            </h1>
-
-            <div className="flex flex-col space-y-4">
-              {loadingDanhMuc === false ? (
-                <>
+      {khoaPhong === 'Phòng Quản Lý chất lượng' ||
+      khoaPhong === 'Phòng Công Nghệ Thông Tin' ? (
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4">
+            Danh mục
+          </h1>
+          <div>
+            {loadingDanhMuc ? (
+              <div className="flex justify-center items-center min-h-[200px]">
+                <LoadingOutlined style={{ fontSize: '50px' }} />
+                <span className="ml-2 text-lg">Đang tải dữ liệu...</span>
+              </div>
+            ) : (
+              <table
+                className="w-full border border-gray-300 bg-white"
+                style={{ tableLayout: 'auto' }}
+              >
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border px-1 py-1 w-12">Mã số</th>
+                    <th className="border px-1 py-1 break-words w-24">Tên</th>
+                    <th className="border px-1 py-1 break-words">Mô tả</th>
+                    <th className="border px-1 py-1 break-words w-20">Mức</th>
+                    <th className="border px-1 py-1 break-words w-28">
+                      Thao tác
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
                   {[...Array(level1Count)].map((_, index) => {
                     const level1Id = index + 1;
-
-                    const existingData = dataTieuChi.find(
-                      (tc) => tc.so_tieuchi === level1Id && tc.hidden === 0,
+                    const tieuChi = dataTieuChi.find(
+                      (tc) =>
+                        tc.so_tieuchi === level1Id &&
+                        (tc.hidden === undefined || tc.hidden === 0),
                     );
-
                     const key = level1Id;
                     const isLoadingTieuChi = !!loadingTieuChiButtons[key];
                     const currentLoadingButtonTieuChi =
                       loadingTieuChiButtons[key];
-
                     return (
-                      <div
-                        key={`level-1-${level1Id}`}
-                        className="bg-white rounded-lg shadow-sm p-4"
-                        id={`level-1-${level1Id}`}
+                      <EditableRow
+                        key={`tieuchi-${level1Id}`}
+                        level1Id={level1Id}
+                        tieuChi={tieuChi}
+                        isLoadingTieuChi={isLoadingTieuChi}
+                        currentLoadingButtonTieuChi={
+                          currentLoadingButtonTieuChi
+                        }
+                        onLuu={luuTieuChi}
+                        onThemTieuMuc={() => themTieuMuc(level1Id)}
                       >
-                        <h3 className="text-lg sm:text-xl lg:text-2xl text-danger font-bold mb-3">
-                          Tiêu chí - {level1Id}
-                        </h3>
-
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <input
-                            type="text"
-                            placeholder="Số"
-                            value={level1Id}
-                            readOnly
-                            className="h-10 w-full sm:w-[8%] p-2 border rounded"
-                          />
-
-                          <input
-                            type="text"
-                            placeholder="Tên Tiêu chí"
-                            id={`ten-tieuchi-cap1-${level1Id}`}
-                            defaultValue={existingData?.ten_tieuchi || ''}
-                            className="h-10 w-full sm:w-[10%] p-2 border rounded"
-                          />
-                          <textarea
-                            id={`noidung-tieuchi-cap1-${level1Id}`}
-                            className="w-full sm:w-[70%] p-2 border rounded min-h-[60px]"
-                            defaultValue={existingData?.mo_ta || ''}
-                            rows={2}
-                            placeholder="Nội dung Tiêu chí"
-                          ></textarea>
-
-                          <div className="flex flex-row gap-2 sm:flex-nowrap">
-                            <button
-                              title="Lưu tiêu chí"
-                              className={`h-10 flex items-center justify-center rounded bg-primary p-3 text-white hover:bg-opacity-90 ${
-                                isLoadingTieuChi
-                                  ? 'opacity-50 cursor-not-allowed'
-                                  : ''
-                              }`}
-                              onClick={() => luuTieuChi(level1Id)}
-                              disabled={isLoadingTieuChi}
-                            >
-                              {currentLoadingButtonTieuChi === 'luutieuchi' ? (
-                                <LoadingOutlined />
-                              ) : (
-                                <SaveFilled />
-                              )}
-                            </button>
-
-                            {existingData && (
-                              <button
-                                title="Thêm tiểu mục"
-                                className={`h-10 flex items-center justify-center rounded bg-success p-3 text-white hover:bg-opacity-90 ${
-                                  isLoadingTieuChi
-                                    ? 'opacity-50 cursor-not-allowed'
-                                    : ''
-                                }`}
-                                onClick={() => themTieuMuc(level1Id)}
-                                disabled={isLoadingTieuChi}
-                              >
-                                {currentLoadingButtonTieuChi ===
-                                'themtieumuc' ? (
-                                  <LoadingOutlined />
-                                ) : (
-                                  <PlusCircleFilled />
-                                )}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        {existingData?.cac_tieu_muc
-                          .filter((item) => item.hidden === 0)
-                          .map((item, level2Index) => {
-                            const level2Id = level2Index + 1;
-
-                            const existingDataTieuMuc =
-                              existingData?.cac_tieu_muc.find(
-                                (tc) =>
-                                  tc.so_tieu_muc === item?.so_tieu_muc &&
-                                  tc.hidden === 0,
-                              );
-
-                            const key = item?.so_tieu_muc;
+                        {tieuChi?.cac_tieu_muc
+                          ?.filter(
+                            (tm) => tm.hidden === 0 || tm.hidden === undefined,
+                          )
+                          .map((tm, idx2) => {
+                            const level2Id = idx2 + 1;
+                            const key2 = tm.so_tieu_muc;
                             const isLoadingTieuMuc =
-                              !!loadingTieuMucButtons[key];
+                              !!loadingTieuMucButtons[key2];
                             const currentLoadingButtonTieuMuc =
-                              loadingTieuMucButtons[key];
-
+                              loadingTieuMucButtons[key2];
                             return (
-                              <>
-                                <div
-                                  key={`${item?.so_tieu_muc}-${forceUpdate}`}
-                                  className="ml-4 mt-4 bg-gray-50 rounded-lg p-4"
-                                  id={`level-2-${level1Id}-${level2Id}`}
-                                >
-                                  <h3 className="text-primary font-bold">
-                                    Tiểu mục - {item?.so_tieu_muc}
-                                  </h3>
-
-                                  <div className="input-group">
-                                    <input
-                                      type="text"
-                                      placeholder="Số"
-                                      value={`${item?.so_tieu_muc}`}
-                                      readOnly
-                                      className="h-10 w-full sm:w-[8%] p-2 border rounded"
-                                    />
-                                    <input
-                                      type="text"
-                                      placeholder="Tên Tiểu mục"
-                                      defaultValue={item?.ten_tieu_muc || ''}
-                                      id={`ten-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                      className="h-10 w-full sm:w-[10%] p-2 border rounded"
-                                    />
-
-                                    <textarea
-                                      id={`noidung-tieumuc-cap2-${level1Id}-${level2Id}`}
-                                      className="w-full sm:w-[70%] p-2 border rounded min-h-[60px]"
-                                      defaultValue={item?.mo_ta_tieu_muc || ''}
-                                      rows={2}
-                                      placeholder="Nội dung Tiểu mục"
-                                    ></textarea>
-                                    <div className="flex flex-row gap-2 sm:flex-nowrap">
-                                      <button
-                                        title="Lưu tiểu mục"
-                                        className={`h-10 justify-center hover:bg-primary rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1 ml-1 ${
-                                          isLoadingTieuMuc
-                                            ? 'opacity-50 cursor-not-allowed'
-                                            : ''
-                                        }`}
-                                        onClick={() =>
-                                          luuTieuMuc(
+                              <EditableSubRow
+                                key={`tieumuc-${tm.id_tieumuc}`}
+                                level1Id={level1Id}
+                                level2Id={level2Id}
+                                tm={tm}
+                                isLoadingTieuMuc={isLoadingTieuMuc}
+                                currentLoadingButtonTieuMuc={
+                                  currentLoadingButtonTieuMuc
+                                }
+                                onLuu={(level2Id: number, tm: any) =>
+                                  luuTieuMuc(
+                                    level1Id,
+                                    level2Id,
+                                    tm.ten_tieu_muc,
+                                    tm.mo_ta_tieu_muc,
+                                    tm.so_tieu_muc,
+                                    tm.id_tieumuc,
+                                    tm,
+                                  )
+                                }
+                                onXoa={() =>
+                                  xoaTieuMuc(
+                                    level1Id,
+                                    tm.so_tieu_muc,
+                                    tm.id_tieumuc,
+                                  )
+                                }
+                                onThemTieuMucCon={() =>
+                                  themTieuMucCon(level1Id, tm.so_tieu_muc)
+                                }
+                              >
+                                {tm.cac_tieu_muc_con
+                                  ?.filter(
+                                    (tmc) =>
+                                      tmc.hidden === 0 ||
+                                      tmc.hidden === undefined,
+                                  )
+                                  .map((tmc, idx3) => {
+                                    const level3Id = idx3 + 1;
+                                    const key3 = tmc.so_tieu_muc_con;
+                                    const isLoadingTieuMucCon =
+                                      !!loadingTieuMucConButtons[key3];
+                                    const currentLoadingButtonTieuMucCon =
+                                      loadingTieuMucConButtons[key3];
+                                    return (
+                                      <EditableSubSubRow
+                                        key={`tieumuccon-${tmc.id_tieumuccon}`}
+                                        level1Id={level1Id}
+                                        level2Id={level2Id}
+                                        level3Id={level3Id}
+                                        tm={tm}
+                                        tmc={tmc}
+                                        isLoadingTieuMucCon={
+                                          isLoadingTieuMucCon
+                                        }
+                                        currentLoadingButtonTieuMucCon={
+                                          currentLoadingButtonTieuMucCon
+                                        }
+                                        onLuu={(level3Id: number, tmc: any) =>
+                                          luuTieuMucCon(
                                             level1Id,
                                             level2Id,
-                                            item?.so_tieu_muc,
+                                            level3Id,
+                                            tmc.ten_tieu_muc_con,
+                                            tmc.mo_ta_tieu_muc_con,
+                                            tmc.muc,
+                                            tm.so_tieu_muc,
+                                            tmc.so_tieu_muc_con,
+                                            tmc.id_tieumuccon,
+                                            tmc,
                                           )
                                         }
-                                        disabled={isLoadingTieuMuc}
-                                      >
-                                        {currentLoadingButtonTieuMuc ===
-                                        'luutieumuc' ? (
-                                          <LoadingOutlined />
-                                        ) : (
-                                          <SaveFilled />
-                                        )}
-                                      </button>
-                                      {item?.cac_tieu_muc_con.filter(
-                                        (item) => item.hidden === 0,
-                                      ).length <= 0 ? (
-                                        <Popconfirm
-                                          title="Xóa tiểu mục"
-                                          description="Bạn có chắc chắn muốn xóa tiểu mục này không?"
-                                          icon={
-                                            <QuestionCircleOutlined
-                                              style={{ color: 'red' }}
-                                            />
-                                          }
-                                          onConfirm={() =>
-                                            xoaTieuMuc(
-                                              level1Id,
-                                              item?.so_tieu_muc,
-                                              item?.id_tieumuc,
-                                            )
-                                          }
-                                          okButtonProps={{
-                                            className:
-                                              'bg-blue-500 hover:bg-blue-600',
-                                          }}
-                                          okText="Xóa"
-                                          cancelText="Không"
-                                        >
-                                          <button
-                                            title="Xóa tiểu mục"
-                                            className={`h-10 justify-center rounded bg-danger hover:bg-danger p-3 font-medium text-gray hover:bg-opacity-90 me-1 ${
-                                              isLoadingTieuMuc
-                                                ? 'opacity-50 cursor-not-allowed'
-                                                : ''
-                                            }`}
-                                            disabled={isLoadingTieuMuc}
-                                          >
-                                            {currentLoadingButtonTieuMuc ===
-                                            'xoatieumuc' ? (
-                                              <LoadingOutlined />
-                                            ) : (
-                                              <DeleteFilled />
-                                            )}
-                                          </button>
-                                        </Popconfirm>
-                                      ) : (
-                                        <></>
-                                      )}
-
-                                      {item.ten_tieu_muc !== '' &&
-                                        item.mo_ta_tieu_muc !== '' && (
-                                          <button
-                                            title="Thêm tiểu mục con"
-                                            className={`h-10 justify-center rounded bg-success hover:bg-success p-3 font-medium text-gray hover:bg-opacity-90 ${
-                                              isLoadingTieuMuc
-                                                ? 'opacity-50 cursor-not-allowed'
-                                                : ''
-                                            }`}
-                                            id={`add-level3-${level1Id}-${level2Id}`}
-                                            onClick={() =>
-                                              themTieuMucCon(
-                                                level1Id,
-                                                item?.so_tieu_muc,
-                                              )
-                                            }
-                                            disabled={isLoadingTieuMuc}
-                                          >
-                                            {currentLoadingButtonTieuMuc ===
-                                            'themtieumuccon' ? (
-                                              <LoadingOutlined />
-                                            ) : (
-                                              <PlusCircleFilled />
-                                            )}
-                                          </button>
-                                        )}
-                                    </div>
-                                  </div>
-
-                                  {existingDataTieuMuc?.cac_tieu_muc_con
-                                    .filter((item) => item.hidden === 0)
-                                    .map((item, level3Index) => {
-                                      const level3Id = level3Index + 1;
-                                      const key = item?.so_tieu_muc_con;
-                                      const isLoading =
-                                        !!loadingTieuMucConButtons[key];
-                                      const currentLoadingButton =
-                                        loadingTieuMucConButtons[key];
-
-                                      return (
-                                        <div
-                                          key={`${item?.so_tieu_muc_con}-${forceUpdate}`}
-                                          data-so-tieu-muc-con={
-                                            item?.so_tieu_muc_con
-                                          }
-                                          className="ml-2 sm:ml-4 mt-4 bg-white rounded-lg p-3 sm:p-4"
-                                          id={`level-3-${level1Id}-${level2Id}-${level3Id}`}
-                                        >
-                                          <h3 className="text-sm sm:text-base lg:text-lg text-success font-bold mb-3">
-                                            Tiểu mục con -{' '}
-                                            {item?.so_tieu_muc_con}
-                                          </h3>
-
-                                          <div
-                                            className="flex flex-col sm:flex-row gap-3"
-                                            key={item?.so_tieu_muc_con}
-                                          >
-                                            <input
-                                              type="text"
-                                              placeholder="Số"
-                                              value={`${item?.so_tieu_muc_con}`}
-                                              readOnly
-                                              className="h-10 w-full sm:w-[8%] p-2 border rounded"
-                                            />
-                                            <input
-                                              type="text"
-                                              placeholder="Tên Tiểu mục con"
-                                              id={`ten-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                              className="h-10 w-full sm:w-[10%] p-2 border rounded"
-                                              defaultValue={
-                                                item?.ten_tieu_muc_con
-                                                  ? item?.ten_tieu_muc_con
-                                                  : ''
-                                              }
-                                            />
-                                            <input
-                                              type="number"
-                                              min={1}
-                                              placeholder="Mức"
-                                              id={`muc-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                              className="h-10 w-full sm:w-[10%] p-2 border rounded"
-                                              defaultValue={
-                                                item?.muc ? item?.muc : ''
-                                              }
-                                              onInput={(e: any) => {
-                                                if (e.target.value <= 1)
-                                                  e.target.value = 1;
-                                              }}
-                                            />
-                                            <textarea
-                                              id={`noidung-tieumuccon-cap3-${level1Id}-${level2Id}-${level3Id}`}
-                                              className="w-full sm:w-[55%] p-2 border rounded min-h-[60px]"
-                                              defaultValue={
-                                                item?.mo_ta_tieu_muc_con
-                                                  ? item?.mo_ta_tieu_muc_con
-                                                  : ''
-                                              }
-                                              rows={2}
-                                              placeholder="Nội dung Tiểu mục con"
-                                            ></textarea>
-                                            <div className="flex flex-row gap-2 sm:flex-nowrap">
-                                              <button
-                                                title="Lưu tiểu mục con"
-                                                className={`h-10 justify-center rounded hover:bg-primary bg-primary p-3 font-medium text-gray hover:bg-opacity-90 me-1 ml-1 ${
-                                                  isLoading
-                                                    ? 'opacity-50 cursor-not-allowed'
-                                                    : ''
-                                                }`}
-                                                onClick={() =>
-                                                  luuTieuMucCon(
-                                                    level1Id,
-                                                    level2Id,
-                                                    level3Id,
-                                                    existingDataTieuMuc?.so_tieu_muc,
-                                                    item?.so_tieu_muc_con,
-                                                  )
-                                                }
-                                                disabled={isLoading}
-                                              >
-                                                {currentLoadingButton ===
-                                                'luutieumuccon' ? (
-                                                  <LoadingOutlined />
-                                                ) : (
-                                                  <SaveFilled />
-                                                )}
-                                              </button>
-
-                                              <Popconfirm
-                                                title="Xóa tiểu mục con"
-                                                description="Bạn có chắc chắn muốn xóa tiểu mục con này không?"
-                                                icon={
-                                                  <QuestionCircleOutlined
-                                                    style={{ color: 'red' }}
-                                                  />
-                                                }
-                                                onConfirm={() =>
-                                                  xoaTieuMucCon(
-                                                    level1Id,
-                                                    level2Id,
-                                                    item?.so_tieu_muc_con,
-                                                    item?.id_tieumuccon,
-                                                  )
-                                                }
-                                                okButtonProps={{
-                                                  className:
-                                                    'bg-blue-500 hover:bg-blue-600',
-                                                }}
-                                                okText="Xóa"
-                                                cancelText="Không"
-                                              >
-                                                <button
-                                                  title="Xóa tiểu mục con"
-                                                  className={`h-10 justify-center rounded hover:bg-danger bg-red-500 p-3 font-medium text-white hover:bg-opacity-90 me-1 ${
-                                                    isLoading
-                                                      ? 'opacity-50 cursor-not-allowed'
-                                                      : ''
-                                                  }`}
-                                                  disabled={isLoading}
-                                                >
-                                                  {currentLoadingButton ===
-                                                  'xoatieumuccon' ? (
-                                                    <LoadingOutlined />
-                                                  ) : (
-                                                    <DeleteFilled />
-                                                  )}
-                                                </button>
-                                              </Popconfirm>
-
-                                              {item.ten_tieu_muc_con !== '' &&
-                                                item.mo_ta_tieu_muc_con !==
-                                                  '' &&
-                                                item.muc !== '' && (
-                                                  <button
-                                                    title="Chèn thêm tiểu mục con"
-                                                    className={`h-10 justify-center rounded hover:bg-success bg-success p-3 font-medium text-gray hover:bg-opacity-90 ${
-                                                      isLoading
-                                                        ? 'opacity-50 cursor-not-allowed'
-                                                        : ''
-                                                    }`}
-                                                    id={`add-level3-${level1Id}-${level2Id}`}
-                                                    onClick={() =>
-                                                      chenThemTieuMucCon(
-                                                        level1Id,
-                                                        level2Id,
-                                                        item?.so_tieu_muc_con,
-                                                      )
-                                                    }
-                                                    disabled={isLoading}
-                                                  >
-                                                    {currentLoadingButton ===
-                                                    'chenthemtieumuccon' ? (
-                                                      <LoadingOutlined />
-                                                    ) : (
-                                                      <PlusCircleFilled />
-                                                    )}
-                                                  </button>
-                                                )}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                </div>
-                              </>
+                                        onXoa={() =>
+                                          xoaTieuMucCon(
+                                            level1Id,
+                                            level2Id,
+                                            tmc.so_tieu_muc_con,
+                                            tmc.id_tieumuccon,
+                                          )
+                                        }
+                                        onChenThem={() =>
+                                          chenThemTieuMucCon(
+                                            level1Id,
+                                            level2Id,
+                                            tmc.so_tieu_muc_con,
+                                          )
+                                        }
+                                      />
+                                    );
+                                  })}
+                              </EditableSubRow>
                             );
                           })}
-                      </div>
+                      </EditableRow>
                     );
                   })}
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-center items-center min-h-[200px]">
-                    <LoadingOutlined style={{ fontSize: '50px' }} />
-                  </div>
-                </>
-              )}
-            </div>
+                </tbody>
+              </table>
+            )}
           </div>
-        </>
+        </div>
       ) : (
-        <>
-          <Result
-            status="403"
-            title="403"
-            subTitle="Bạn không có quyền truy cập trang này"
-            extra={
-              <Link to={'/danh-sach-tieu-chi'}>
-                <button className="hover:bg-primary bg-primary p-2 text-white rounded">
-                  Quay lại trang chủ
-                </button>
-              </Link>
-            }
-          />
-        </>
+        <Result
+          status="403"
+          title="403"
+          subTitle="Bạn không có quyền truy cập trang này"
+          extra={
+            <Link to={'/danh-sach-tieu-chi'}>
+              <button className="hover:bg-primary bg-primary p-2 text-white rounded">
+                Quay lại trang chủ
+              </button>
+            </Link>
+          }
+        />
       )}
     </>
   );

@@ -497,9 +497,12 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         let passedTieuMucCon = 0;
 
         tieuChi.cac_tieu_muc.forEach((tieuMuc) => {
-          if (tieuMuc.hidden === 0 && tieuMuc.cac_tieu_muc_con) {
+          if (
+            (tieuMuc.hidden === 0 || tieuMuc.hidden === undefined) &&
+            tieuMuc.cac_tieu_muc_con
+          ) {
             tieuMuc.cac_tieu_muc_con.forEach((tieuMucCon) => {
-              if (tieuMucCon.hidden === 0) {
+              if (tieuMucCon.hidden === 0 || tieuMucCon.hidden === undefined) {
                 totalTieuMucCon++;
                 if (evaluationScores[tieuMucCon.id_tieumuccon] === 1) {
                   passedTieuMucCon++;
@@ -838,17 +841,19 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
         danh_sach_danh_gia: danhSachTieuChiTheoKhoa.map((tieuChi) => ({
           id_tieuchi: tieuChi.id_tieuchi,
           tieu_muc: tieuChi.cac_tieu_muc
-            .filter((tm) => tm.hidden === 0)
+            .filter((tm) => tm.hidden === 0 || tm.hidden === undefined)
             .filter(
               (tm) => tm.cac_tieu_muc_con && tm.cac_tieu_muc_con.length > 0,
             )
             .map((tieuMuc) => {
               const allTieuMucConDat = tieuMuc.cac_tieu_muc_con
-                ?.filter((tmc) => tmc.hidden === 0)
+                ?.filter((tmc) => tmc.hidden === 0 || tmc.hidden === undefined)
                 ?.every((tmc) => evaluationScores[tmc.id_tieumuccon] === 1);
 
               const danhGiaTieuMucConString = tieuMuc.cac_tieu_muc_con
-                ?.filter((tmc: any) => tmc.hidden === 0)
+                ?.filter(
+                  (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
+                )
                 ?.map(
                   (tmc: any) =>
                     `${tmc.id_tieumuccon}:${
@@ -858,7 +863,9 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                 .join(',');
 
               const danhGiaVaGhiChuString = tieuMuc.cac_tieu_muc_con
-                ?.filter((tmc: any) => tmc.hidden === 0)
+                ?.filter(
+                  (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
+                )
                 ?.map((tmc: any) => {
                   const ghiChu = evaluationNotes[tmc.id_tieumuccon] || 'none';
                   return `${tmc.id_tieumuccon}:${ghiChu}`;
@@ -866,7 +873,9 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                 .join(',');
 
               const evaluatorNamesString = tieuMuc.cac_tieu_muc_con
-                ?.filter((tmc: any) => tmc.hidden === 0)
+                ?.filter(
+                  (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
+                )
                 ?.map((tmc: any) => {
                   const evaluatorName =
                     evaluatorNames[tmc.id_tieumuccon] || 'none';
@@ -898,7 +907,7 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
       // Sau khi tạo đánh giá thành công, thực hiện ghi log cho từng tiêu mục
       const logPromises = danhSachTieuChiTheoKhoa.flatMap((tieuChi) =>
         tieuChi.cac_tieu_muc
-          .filter((tm) => tm.hidden === 0)
+          .filter((tm) => tm.hidden === 0 || tm.hidden === undefined)
           .filter((tm) => tm.cac_tieu_muc_con && tm.cac_tieu_muc_con.length > 0)
           .map(async (tieuMuc) => {
             await axios.post('http://172.16.0.60:83/api/log_danh_gia', {
@@ -941,15 +950,17 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
 
       const updatePromises = danhSachTieuChiTheoKhoa.flatMap((tieuChi) =>
         tieuChi.cac_tieu_muc
-          .filter((tm) => tm.hidden === 0)
+          .filter((tm) => tm.hidden === 0 || tm.hidden === undefined)
           .filter((tm) => tm.cac_tieu_muc_con && tm.cac_tieu_muc_con.length > 0)
           .map(async (tieuMuc) => {
             const allTieuMucConDat = tieuMuc.cac_tieu_muc_con
-              ?.filter((tmc) => tmc.hidden === 0)
+              ?.filter((tmc) => tmc.hidden === 0 || tmc.hidden === undefined)
               ?.every((tmc) => evaluationScores[tmc.id_tieumuccon] === 1);
 
             const danhGiaTieuMucConString = tieuMuc.cac_tieu_muc_con
-              ?.filter((tmc: any) => tmc.hidden === 0)
+              ?.filter(
+                (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
+              )
               ?.map(
                 (tmc: any) =>
                   `${tmc.id_tieumuccon}:${
@@ -959,7 +970,9 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
               .join(',');
 
             const danhGiaVaGhiChuString = tieuMuc.cac_tieu_muc_con
-              ?.filter((tmc: any) => tmc.hidden === 0)
+              ?.filter(
+                (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
+              )
               ?.map((tmc: any) => {
                 const ghiChu = evaluationNotes[tmc.id_tieumuccon] || 'none';
                 return `${tmc.id_tieumuccon}:${ghiChu}`;
@@ -967,7 +980,9 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
               .join(',');
 
             const evaluatorNamesString = tieuMuc.cac_tieu_muc_con
-              ?.filter((tmc: any) => tmc.hidden === 0)
+              ?.filter(
+                (tmc: any) => tmc.hidden === 0 || tmc.hidden === undefined,
+              )
               ?.map((tmc: any) => {
                 const evaluatorName =
                   evaluatorNames[tmc.id_tieumuccon] || 'none';
@@ -1333,7 +1348,10 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                       danhSachTieuChiTheoKhoa.length > 0 ? (
                         <>
                           {danhSachTieuChiTheoKhoa
-                            .filter((tc) => tc.hidden === 0)
+                            .filter(
+                              (tc) =>
+                                tc.hidden === 0 || tc.hidden === undefined,
+                            )
                             .map((tieuChi) => (
                               <Fragment key={tieuChi.id_tieuchi}>
                                 <tr className="bg-blue-700 text-white hover:bg-blue-800">
@@ -1355,7 +1373,11 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                 {tieuChi.cac_tieu_muc &&
                                   Array.isArray(tieuChi.cac_tieu_muc) &&
                                   tieuChi.cac_tieu_muc
-                                    .filter((tm) => tm.hidden === 0)
+                                    .filter(
+                                      (tm) =>
+                                        tm.hidden === 0 ||
+                                        tm.hidden === undefined,
+                                    )
                                     .map((tieuMuc) => (
                                       <Fragment key={tieuMuc.id_tieumuc}>
                                         {tieuMuc.ten_tieu_muc && (
@@ -1383,7 +1405,11 @@ const DanhGiaTieuChiKhoaPhong: React.FC = () => {
                                             tieuMuc.cac_tieu_muc_con,
                                           ) &&
                                           tieuMuc.cac_tieu_muc_con
-                                            .filter((tmc) => tmc.hidden === 0)
+                                            .filter(
+                                              (tmc) =>
+                                                tmc.hidden === 0 ||
+                                                tmc.hidden === undefined,
+                                            )
                                             .map((tieuMucCon) => (
                                               <tr
                                                 key={tieuMucCon.id_tieumuccon}

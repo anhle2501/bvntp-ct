@@ -60,7 +60,6 @@ const SignIn: React.FC = () => {
       let res = await fetch('http://172.16.0.60:83/api/get_info');
       if (res) {
         let info = await res.json();
-
         setLayThongTin(info || null);
       }
     } catch (error) {
@@ -152,57 +151,85 @@ const SignIn: React.FC = () => {
   };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    // let timer: NodeJS.Timeout;
+    const checkLoginInfo = async () => {
+      if (layThongTin !== null) {
+        if (
+          layThongTin?.ten_khoa_phong === 'Phòng Quản Lý chất lượng' ||
+          layThongTin?.ten_khoa_phong === 'Phòng Công Nghệ Thông Tin'
+        ) {
+          let dataLogin = {
+            tennhanvien: layThongTin?.ho_ten,
+            khoaphong: layThongTin?.ten_khoa_phong,
+            matkhau: layThongTin?.mat_khau,
+          };
 
-    if (layThongTin !== null) {
-      // Bắt đầu đếm ngược từ 2 giây
-      timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 0) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+          let jwtToken: any = await handleEncodeDangNhap(dataLogin);
+          localStorage.setItem('token', jwtToken);
+          navigate('/quan-ly-tieu-chi');
+        } else {
+          let dataLogin = {
+            tennhanvien: layThongTin?.ho_ten,
+            khoaphong: layThongTin?.ten_khoa_phong,
+            matkhau: layThongTin?.mat_khau,
+          };
 
-      setTimeout(async () => {
-        try {
-          const isValidUser = dataNhanVienToanVien.some(
-            (nhanVien: any) =>
-              nhanVien.HOTEN === layThongTin?.ho_ten &&
-              nhanVien.TENGOIKHOAPHONG === layThongTin?.ten_khoa_phong &&
-              nhanVien.MATKHAU === hashPassword(layThongTin?.mat_khau),
-          );
-
-          if (isValidUser) {
-            let dataLogin = {
-              tennhanvien: layThongTin?.ho_ten,
-              khoaphong: layThongTin?.ten_khoa_phong,
-              matkhau: layThongTin?.mat_khau,
-            };
-
-            let jwtToken: any = await handleEncodeDangNhap(dataLogin);
-            localStorage.setItem('token', jwtToken);
-            navigate('/');
-          } else {
-            messageApi.open({
-              type: 'error',
-              content: `Thông tin bạn đã nhập không chính xác. Vui lòng thử lại`,
-            });
-          }
-        } catch (error) {
-          messageApi.open({
-            type: 'error',
-            content: `Đã xảy ra lỗi trong quá trình đăng nhập`,
-          });
+          let jwtToken: any = await handleEncodeDangNhap(dataLogin);
+          localStorage.setItem('token', jwtToken);
+          navigate('/danh-sach-tieu-chi');
         }
-      }, 3000);
-    }
 
-    return () => {
-      clearInterval(timer);
+        // Bắt đầu đếm ngược từ 2 giây
+        // timer = setInterval(() => {
+        //   setCountdown((prev) => {
+        //     if (prev <= 0) {
+        //       clearInterval(timer);
+        //       return 0;
+        //     }
+        //     return prev - 1;
+        //   });
+        // }, 1000);
+
+        // setTimeout(async () => {
+        //   try {
+        //     const isValidUser = dataNhanVienToanVien.some(
+        //       (nhanVien: any) =>
+        //         nhanVien.HOTEN === layThongTin?.ho_ten &&
+        //         nhanVien.TENGOIKHOAPHONG === layThongTin?.ten_khoa_phong &&
+        //         (layThongTin === null
+        //           ? nhanVien.MATKHAU === hashPassword(layThongTin?.mat_khau)
+        //           : nhanVien.MATKHAU === layThongTin?.mat_khau),
+        //     );
+
+        //     if (isValidUser) {
+        //       let dataLogin = {
+        //         tennhanvien: layThongTin?.ho_ten,
+        //         khoaphong: layThongTin?.ten_khoa_phong,
+        //         matkhau: layThongTin?.mat_khau,
+        //       };
+
+        //       let jwtToken: any = await handleEncodeDangNhap(dataLogin);
+        //       localStorage.setItem('token', jwtToken);
+        //       navigate('/');
+        //     } else {
+        //       messageApi.open({
+        //         type: 'error',
+        //         content: `Thông tin bạn đã nhập không chính xác. Vui lòng thử lại`,
+        //       });
+        //     }
+        //   } catch (error) {
+        //     messageApi.open({
+        //       type: 'error',
+        //       content: `Đã xảy ra lỗi trong quá trình đăng nhập`,
+        //     });
+        //   }
+        // }, 3000);
+      }
     };
+    checkLoginInfo();
+    // return () => {
+    //   clearInterval(timer);
+    // };
   }, [layThongTin]);
 
   const validateForm = () => {
@@ -247,7 +274,9 @@ const SignIn: React.FC = () => {
           (nhanVien: any) =>
             nhanVien.HOTEN === tenNhanVien?.value &&
             nhanVien.TENGOIKHOAPHONG === khoaPhong?.value &&
-            nhanVien.MATKHAU === hashPassword(password),
+            (layThongTin === null
+              ? nhanVien.MATKHAU === hashPassword(password)
+              : nhanVien.MATKHAU === password),
         );
 
         if (isValidUser) {
@@ -260,7 +289,11 @@ const SignIn: React.FC = () => {
           let jwtToken: any = await handleEncodeDangNhap(dataLogin);
           localStorage.setItem('token', jwtToken);
 
-          if (khoaPhong?.value === 'Phòng Quản Lý chất lượng') {
+          if (
+            khoaPhong?.value === 'Phòng Quản Lý chất lượng' ||
+            (tenNhanVien?.value === 'Trần Quyên Vũ' &&
+              khoaPhong?.value === 'Phòng Công Nghệ Thông Tin')
+          ) {
             navigate('/');
             window.location.reload();
           } else {

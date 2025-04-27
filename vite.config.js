@@ -7,4 +7,8 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['js-big-decimal'],
   },
+  server: {
+    host: 'localhost',
+    port: 4646,
+  },
 });

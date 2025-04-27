@@ -346,7 +346,8 @@ const ChecklistTable: React.FC = () => {
     <>
       <div className="relative w-full">
         {contextHolder}
-        {khoaPhong === 'Phòng Quản Lý chất lượng' ? (
+        {khoaPhong === 'Phòng Quản Lý chất lượng' ||
+        khoaPhong === 'Phòng Công Nghệ Thông Tin' ? (
           <>
             <div className="container">
               <h1>Checklist Khoa Phòng</h1>
@@ -389,16 +390,13 @@ const ChecklistTable: React.FC = () => {
 
                   <div className="relative overflow-auto w-full">
                     <div className="inline-block min-w-full">
-                      <div className="overflow-x-auto">
-                        <table
-                          // id="checklist-table"
-                          // className="min-w-full divide-y divide-gray-200"
-                          // className="w-full table-auto border-collapse"
-                          className="min-w-full"
-                        >
-                          <thead>{renderTableHeader()}</thead>
-                          <tbody>{renderTableBody()}</tbody>
-                        </table>
+                      <div className="table-wrapper">
+                        <div className="table-container">
+                          <table className="min-w-full">
+                            <thead>{renderTableHeader()}</thead>
+                            <tbody>{renderTableBody()}</tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
                   </div>
